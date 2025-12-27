@@ -17,18 +17,10 @@
         .btn-main:disabled { background: #333; color: #666; cursor: not-allowed; }
         .input-dark { background: #000; border: 1px solid #333; color: #d4af37; outline: none; transition: 0.3s; text-align: center; }
         .input-dark:focus { border-color: #d4af37; box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); }
-        [v-cloak] { display: none; } /* 防止未加载时显示乱码 */
+        [v-cloak] { display: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-6 bg-black text-gray-300">
-
-    <!-- 如果 JS 崩溃，显示此错误提示 -->
-    <noscript>
-        <div style="color:red; text-align:center;">
-            <h1>SYSTEM ERROR</h1>
-            <p>JavaScript is required to access the Nexus.</p>
-        </div>
-    </noscript>
 
     <div id="app" class="w-full max-w-md relative z-10" v-cloak>
         
@@ -93,14 +85,11 @@
 
     <script>
         // ==========================================
-        // 🔴 关键修复区：请小心粘贴 Key
+        // ✅ 已填好 URL 和 KEY (第 103-106 行)
         // ==========================================
         
         const SUPABASE_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
-        
-        // 👇 下面这行，请把你的长Key粘贴在两个单引号之间 👇
-        const SUPABASE_KEY = 'sb_publishable_88XOHLhU9_O08SV01vYomQ_F2119gww'; 
-        // 👆 确保是 '你的Key'，不要弄丢了单引号！👆
+        const SUPABASE_KEY = 'sb_publishable_88XOHLhU9_O08SV01vYomQ_F2119gww';
 
         // ==========================================
 
@@ -109,9 +98,10 @@
 
         createApp({
             setup() {
+                // 这里就是你刚才看到的第 114 行，这里是逻辑区，不要动
                 const user = ref(null);
                 const email = ref('');
-                const loading = ref(false);
+                const loading = ref(false); 
                 const apps = ref([]);
                 const inviteCode = ref('');
                 const permissions = ref({});
