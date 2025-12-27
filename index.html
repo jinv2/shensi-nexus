@@ -11,7 +11,7 @@
     
     <style>
         body { background-color: #050505; color: #e5e5e5; font-family: 'Courier New', Courier, monospace; }
-        .nexus-border { border: 1px solid #222; box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(15,15,15,0.85); backdrop-filter: blur(10px); }
+        .nexus-border { border: 1px solid #222; box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(15,15,15,0.95); }
         .btn-main { background: #d4af37; color: #000; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s ease; }
         .btn-main:hover { background: #fff; box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); transform: translateY(-1px); }
         .btn-main:disabled { background: #333; color: #666; cursor: not-allowed; }
@@ -85,23 +85,32 @@
 
     <script>
         // ==========================================
-        // ✅ 已填好 URL 和 KEY (第 103-106 行)
+        // ✅ 核心配置 (已填入正确数据)
         // ==========================================
         
         const SUPABASE_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_88XOHLhU9_O08SV01vYomQ_F2119gww';
+        
+        // 👇 这里是你刚才提供的正确 Key
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
 
         // ==========================================
 
         const { createApp, ref, onMounted, computed } = Vue;
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // 增加错误捕捉，防止白屏
+        let supabase;
+        try {
+            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (e) {
+            console.error('Supabase Init Failed:', e);
+            document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50px;">系统初始化失败，请检查控制台</h1>';
+        }
 
         createApp({
             setup() {
-                // 这里就是你刚才看到的第 114 行，这里是逻辑区，不要动
                 const user = ref(null);
                 const email = ref('');
-                const loading = ref(false); 
+                const loading = ref(false);
                 const apps = ref([]);
                 const inviteCode = ref('');
                 const permissions = ref({});
