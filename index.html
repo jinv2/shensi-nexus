@@ -5,84 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>神思庭 | Shensi-Nexus</title>
     
-    <!-- 1. 错误捕捉器 (放在最前面) -->
-    <script>
-        window.onerror = function(msg, url, line) {
-            var debugBox = document.getElementById('debug-box');
-            if(debugBox) {
-                debugBox.style.display = 'block';
-                debugBox.innerHTML += '❌ Error: ' + msg + '<br>Line: ' + line + '<br><hr>';
-            }
-        };
-    </script>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 1. 更换为 unpkg 源，防止网络拦截 -->
+    <script src="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
+    <!-- 引入 Tailwind via CDN (CSS) -->
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
     <style>
-        body { background-color: #050505; color: #e5e5e5; font-family: monospace; }
+        body { background-color: #050505; color: #e5e5e5; font-family: 'Courier New', monospace; }
         .nexus-border { border: 1px solid #333; background: rgba(20,20,20,0.9); }
-        .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 10px; width: 100%; margin-top: 10px; }
-        .input-dark { background: #000; border: 1px solid #555; color: #fff; width: 100%; padding: 10px; text-align: center; }
-        /* 删除了 v-cloak 隐藏样式，防止黑屏 */
+        .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 12px; width: 100%; margin-top: 10px; cursor: pointer; transition: 0.2s; }
+        .btn-main:hover { background: #fff; }
+        .input-dark { background: #000; border: 1px solid #555; color: #d4af37; width: 100%; padding: 12px; text-align: center; outline: none; }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <!-- 2. 调试显示区 (红色) -->
-    <div id="debug-box" style="display:none; width:100%; background:white; color:red; padding:20px; border:2px solid red; margin-bottom:20px; z-index:9999;">
-        <strong>⚠️ DEBUG CONSOLE (截图发给我):</strong><br>
+    <!-- 调试信息 -->
+    <div id="loading-msg" style="position:fixed; top:20px; color:yellow;">
+        [ SYSTEM BOOTING... ]
     </div>
 
-    <div id="app" class="w-full max-w-md">
+    <div id="app" style="width: 100%; max-width: 400px; display: none;"> <!-- Vue挂载前隐藏 -->
         
         <!-- 头部 -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2 uppercase">Shensi-ST</h1>
+            <h1 class="text-3xl font-bold text-white mb-2 uppercase tracking-widest">Shensi-ST</h1>
             <p class="text-xs text-gray-500 tracking-[0.5em]">Digital Sovereignty Nexus</p>
         </div>
 
-        <!-- 3. 加载状态检查 -->
-        <div v-if="!isLoaded" class="text-center text-yellow-500 border border-yellow-500 p-4">
-            [ SYSTEM LOADING... ]
+        <!-- 登录 -->
+        <div v-if="!user" class="nexus-border p-6 border-t-2 border-gray-800">
+            <p class="text-xs text-center text-gray-500 mb-6 tracking-widest">[ IDENTITY VERIFICATION ]</p>
+            <input v-model="email" type="email" placeholder="ACCESS EMAIL" class="input-dark mb-4">
+            <button @click="handleLogin" :disabled="loading" class="btn-main">
+                {{ loading ? 'ESTABLISHING LINK...' : 'INITIALIZE' }}
+            </button>
         </div>
 
-        <!-- 主界面 -->
-        <div v-else>
-            <!-- 登录 -->
-            <div v-if="!user" class="nexus-border p-6">
-                <p class="text-xs text-center text-gray-500 mb-4">[ IDENTITY VERIFICATION ]</p>
-                <input v-model="email" type="email" placeholder="ACCESS EMAIL" class="input-dark">
-                <button @click="handleLogin" :disabled="loading" class="btn-main">
-                    {{ loading ? 'CONNECTING...' : 'INITIALIZE' }}
-                </button>
+        <!-- 控制台 -->
+        <div v-else class="space-y-4">
+            <!-- 身份卡 -->
+            <div class="nexus-border p-6 border-t-2" :class="isVip ? 'border-yellow-600' : 'border-gray-700'">
+                <div class="flex justify-between text-xs text-gray-500 mb-4">
+                    <span>OPERATOR</span>
+                    <span class="border px-2 py-1" :class="isVip ? 'text-yellow-500 border-yellow-600' : 'border-gray-700'">
+                        {{ isVip ? 'ARCHITECT' : 'OBSERVER' }}
+                    </span>
+                </div>
+                <div class="text-white font-bold text-lg mb-2">{{ user.email }}</div>
+                
+                <div v-if="isVip" class="text-xs text-green-500 flex items-center pt-2 border-t border-gray-800">
+                    <span class="status-dot bg-green-500"></span> ACCESS GRANTED
+                </div>
+                <div v-else class="text-xs text-red-500 flex items-center pt-2 border-t border-gray-800">
+                    <span class="status-dot bg-red-500"></span> RESTRICTED MODE
+                </div>
+
+                <button @click="signOut" class="text-xs text-red-900 hover:text-red-500 mt-4 w-full text-right tracking-widest">TERMINATE SESSION</button>
             </div>
 
-            <!-- 控制台 -->
-            <div v-else class="space-y-4">
-                <div class="nexus-border p-4 border-t-2" :class="isVip ? 'border-yellow-600' : 'border-gray-600'">
-                    <div class="flex justify-between text-xs text-gray-500 mb-2">
-                        <span>IDENTITY</span>
-                        <span :class="isVip ? 'text-yellow-500' : 'text-gray-500'">{{ isVip ? 'ARCHITECT' : 'OBSERVER' }}</span>
-                    </div>
-                    <div class="text-white font-bold">{{ user.email }}</div>
-                    <div class="mt-2 text-xs" :class="isVip ? 'text-green-500' : 'text-red-500'">
-                        {{ isVip ? 'ACCESS GRANTED' : 'RESTRICTED MODE' }}
-                    </div>
-                    <button @click="signOut" class="text-xs text-red-800 mt-2 w-full text-right">LOGOUT</button>
-                </div>
+            <!-- 激活码 -->
+            <div class="nexus-border p-4 flex gap-2">
+                <input v-model="inviteCode" placeholder="PROTOCOL CODE" class="input-dark text-xs uppercase">
+                <button @click="redeem" class="bg-gray-800 text-gray-400 border border-gray-700 px-4 font-bold text-xs hover:text-white">EXEC</button>
+            </div>
 
-                <div class="nexus-border p-4 flex gap-2">
-                    <input v-model="inviteCode" placeholder="PROTOCOL CODE" class="input-dark">
-                    <button @click="redeem" class="bg-gray-800 text-white px-4 font-bold border border-gray-600">EXEC</button>
-                </div>
-
-                <div class="mt-8">
-                    <p class="text-xs text-center text-gray-600 mb-4">- ASSETS -</p>
-                    <div v-for="app in apps" :key="app.slug" class="nexus-border p-4 mb-2 flex justify-between cursor-pointer hover:bg-gray-900" @click="openApp(app)">
-                        <span class="text-gray-300 font-bold text-sm">{{ app.name }}</span>
-                        <span class="text-xs" :class="isVip ? 'text-green-600' : 'text-gray-600'">{{ isVip ? 'OPEN' : 'LOCKED' }}</span>
+            <!-- 资产列表 -->
+            <div class="mt-8">
+                <p class="text-xs text-center text-gray-700 mb-4 tracking-[0.3em] uppercase">- Neural Links -</p>
+                
+                <div v-for="app in apps" :key="app.slug" class="nexus-border p-4 mb-3 flex justify-between items-center cursor-pointer hover:bg-gray-900 transition" @click="openApp(app)">
+                    <div>
+                        <div class="text-sm font-bold text-gray-400 uppercase tracking-wide">{{ app.name }}</div>
+                        <div class="text-[10px] text-gray-700">{{ app.description }}</div>
+                    </div>
+                    <div class="text-[10px]" :class="isVip ? 'text-green-800' : 'text-gray-800'">
+                        {{ isVip ? 'OPEN >' : 'LOCKED' }}
                     </div>
                 </div>
             </div>
@@ -90,104 +92,113 @@
     </div>
 
     <script>
-        // 配置
+        // ================= 配置区 =================
         const SUPABASE_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
+        // =========================================
 
-        const { createApp, ref, onMounted, computed } = Vue;
+        window.onload = function() {
+            try {
+                // 1. 确保库已加载
+                if (typeof Vue === 'undefined' || typeof supabase === 'undefined') {
+                    throw new Error("Core libraries failed to load (Network blockage).");
+                }
 
-        createApp({
-            setup() {
-                const isLoaded = ref(false); // 默认未加载
-                const user = ref(null);
-                const email = ref('');
-                const loading = ref(false);
-                const apps = ref([]);
-                const inviteCode = ref('');
-                const permissions = ref({});
+                const { createApp, ref, onMounted, computed } = Vue;
+                
+                // 2. 初始化 Supabase (使用别名 sbClient 防止冲突)
+                const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                // 核心逻辑
-                onMounted(async () => {
-                    try {
-                        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                        
-                        // 1. 检查 Session
-                        const { data: { session }, error } = await supabase.auth.getSession();
-                        if (error) throw error;
+                const app = createApp({
+                    setup() {
+                        const user = ref(null);
+                        const email = ref('');
+                        const loading = ref(false);
+                        const apps = ref([]);
+                        const inviteCode = ref('');
+                        const permissions = ref({});
 
-                        if (session) {
-                            user.value = session.user;
-                            // 加载数据
-                            const { data: appsData } = await supabase.from('apps').select('*').eq('status', 'active');
+                        // 初始化逻辑
+                        const initSystem = async () => {
+                            // 查应用
+                            const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
                             apps.value = appsData || [];
-                            const { data: profile } = await supabase.from('profiles').select('permissions').eq('id', user.value.id).single();
+                            
+                            // 查权限
+                            const { data: profile } = await sbClient.from('profiles').select('permissions').eq('id', user.value.id).single();
                             permissions.value = profile?.permissions || {};
-                        }
+                        };
 
-                        // 监听变化
-                        supabase.auth.onAuthStateChange(async (_e, session) => {
-                            user.value = session?.user || null;
-                            if (user.value) {
-                                // 重新加载数据
-                                const { data: appsData } = await supabase.from('apps').select('*').eq('status', 'active');
-                                apps.value = appsData || [];
-                                const { data: profile } = await supabase.from('profiles').select('permissions').eq('id', user.value.id).single();
-                                permissions.value = profile?.permissions || {};
+                        onMounted(async () => {
+                            // 检查登录态
+                            const { data: { session } } = await sbClient.auth.getSession();
+                            if (session) {
+                                user.value = session.user;
+                                await initSystem();
                             }
+
+                            // 监听状态变化
+                            sbClient.auth.onAuthStateChange((_e, session) => {
+                                user.value = session?.user || null;
+                                if(user.value) initSystem();
+                            });
+                            
+                            // 移除 Loading，显示 App
+                            document.getElementById('loading-msg').style.display = 'none';
+                            document.getElementById('app').style.display = 'block';
                         });
 
-                        // 标记加载完成
-                        isLoaded.value = true;
+                        const handleLogin = async () => {
+                            if (!email.value) return alert('EMAIL REQUIRED');
+                            loading.value = true;
+                            const { error } = await sbClient.auth.signInWithOtp({ email: email.value });
+                            if (error) alert(error.message);
+                            else alert('CHECK INBOX: ' + email.value);
+                            loading.value = false;
+                        };
 
-                    } catch (e) {
-                        alert('启动失败: ' + e.message);
-                        console.error(e);
+                        const isVip = computed(() => {
+                            const date = permissions.value['ALL'];
+                            return date && new Date(date) > new Date();
+                        });
+
+                        const redeem = async () => {
+                            if (!inviteCode.value) return;
+                            const { data: codeData } = await sbClient.from('invite_codes').select('*').eq('code', inviteCode.value).eq('is_used', false).single();
+                            if (!codeData) return alert('INVALID CODE');
+
+                            let currentExp = permissions.value['ALL'] ? new Date(permissions.value['ALL']) : new Date();
+                            if (currentExp < new Date()) currentExp = new Date();
+                            currentExp.setDate(currentExp.getDate() + codeData.days);
+
+                            const newPerms = { ...permissions.value, 'ALL': currentExp.toISOString() };
+                            
+                            await sbClient.from('profiles').update({ permissions: newPerms, role: 'architect' }).eq('id', user.value.id);
+                            await sbClient.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
+
+                            alert('ACCESS GRANTED');
+                            inviteCode.value = '';
+                            initSystem();
+                        };
+
+                        const openApp = (app) => {
+                            if (isVip.value) window.open(app.url, '_blank');
+                            else alert('LOCKED');
+                        };
+
+                        const signOut = () => sbClient.auth.signOut();
+
+                        return { user, email, loading, apps, inviteCode, handleLogin, signOut, isVip, redeem, openApp };
                     }
                 });
 
-                // 重新实例化 supabase 供内部函数使用
-                const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                app.mount('#app');
 
-                const handleLogin = async () => {
-                    loading.value = true;
-                    const { error } = await supabase.auth.signInWithOtp({ email: email.value });
-                    if (error) alert(error.message);
-                    else alert('已发送登录链接到: ' + email.value);
-                    loading.value = false;
-                };
-
-                const isVip = computed(() => {
-                    const date = permissions.value['ALL'];
-                    return date && new Date(date) > new Date();
-                });
-
-                const redeem = async () => {
-                    if (!inviteCode.value) return;
-                    const { data: codeData } = await supabase.from('invite_codes').select('*').eq('code', inviteCode.value).eq('is_used', false).single();
-                    if (!codeData) return alert('无效验证码');
-
-                    let currentExp = permissions.value['ALL'] ? new Date(permissions.value['ALL']) : new Date();
-                    if (currentExp < new Date()) currentExp = new Date();
-                    currentExp.setDate(currentExp.getDate() + codeData.days);
-
-                    const newPerms = { ...permissions.value, 'ALL': currentExp.toISOString() };
-                    await supabase.from('profiles').update({ permissions: newPerms, role: 'architect' }).eq('id', user.value.id);
-                    await supabase.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
-
-                    alert('升级成功');
-                    window.location.reload();
-                };
-
-                const openApp = (app) => {
-                    if (isVip.value) window.open(app.url, '_blank');
-                    else alert('权限不足');
-                };
-
-                const signOut = () => supabase.auth.signOut();
-
-                return { isLoaded, user, email, loading, apps, inviteCode, handleLogin, signOut, isVip, redeem, openApp };
+            } catch (err) {
+                document.getElementById('loading-msg').innerHTML = `<span style="color:red">ERROR: ${err.message}</span>`;
+                console.error(err);
             }
-        }).mount('#app');
+        };
     </script>
 </body>
 </html>
