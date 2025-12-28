@@ -3,371 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>神思庭 | Shensi-Nexus</title>
+    <title>Deep Read | 深读</title>
     
-    <!-- 核心库 -->
-    <script src="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 1. 样式库 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 2. Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- 3. Google Gemini -->
+    <script type="importmap">
+      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+    </script>
+    <!-- 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;600&display=swap" rel="stylesheet">
 
     <style>
-        /* 全局基础 */
-        body { background-color: #000; color: #e5e5e5; font-family: 'Courier New', monospace; overflow-x: hidden; }
-        
-        /* 核心容器 */
-        .nexus-container { width: 100%; max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
-
-        /* 边框风格 */
-        .nexus-border { 
-            border: 1px solid #333; 
-            background: rgba(15,15,15,0.95); 
-            box-shadow: 0 0 30px rgba(0,0,0,0.8); 
-            backdrop-filter: blur(10px); 
-            width: 100%;
-            border-radius: 4px;
-        }
-
-        /* 交互组件 */
-        .btn-main { 
-            background: #d4af37; color: #000; font-weight: 800; 
-            padding: 15px; width: 100%; cursor: pointer; 
-            text-transform: uppercase; letter-spacing: 2px; border: none;
-            transition: 0.3s;
-        }
-        .btn-main:hover { background: #fff; box-shadow: 0 0 20px #d4af37; }
-        
-        .input-dark { 
-            background: #0a0a0a; border: 1px solid #444; color: #d4af37; 
-            width: 100%; padding: 15px; text-align: center; outline: none; 
-            font-size: 14px; margin-bottom: 10px;
-        }
-        .input-dark:focus { border-color: #d4af37; }
-
-        /* === 魔法轮 (Magic Wheel) === */
-        .wheel-wrapper {
-            display: flex; justify-content: center; align-items: center;
-            width: 100%; margin: 30px 0;
-        }
-        .magic-wheel-container { 
-            position: relative; width: 260px; height: 260px; 
-        }
-        .magic-wheel {
-            width: 100%; height: 100%; border-radius: 50%;
-            border: 2px solid #222; position: relative;
-            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-            background: radial-gradient(circle, #111 0%, #000 70%);
-            box-shadow: 0 0 40px rgba(0,0,0,0.9);
-        }
-        /* 中心 */
-        .wheel-center {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80px; height: 80px; border-radius: 50%;
-            background: #000; border: 1px solid #333;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10; font-size: 24px; color: #fff; text-shadow: 0 0 10px #fff;
-        }
-        /* 扇形按钮位置 */
-        .wheel-item {
-            position: absolute; top: 50%; left: 50%;
-            width: 50px; height: 50px; margin-left: -25px; margin-top: -25px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s;
-            border-radius: 50%; background: #0a0a0a; border: 1px solid #333;
-            color: #555;
-        }
-        .pos-0 { transform: rotate(0deg) translate(90px) rotate(0deg); }
-        .pos-1 { transform: rotate(90deg) translate(90px) rotate(-90deg); }
-        .pos-2 { transform: rotate(180deg) translate(90px) rotate(-180deg); }
-        .pos-3 { transform: rotate(270deg) translate(90px) rotate(-270deg); }
-
-        /* 激活状态 */
-        .active-music { box-shadow: 0 0 25px #10b981; border-color: #10b981; color: #10b981; background: #000; transform: scale(1.2); }
-        .active-cinema { box-shadow: 0 0 25px #f59e0b; border-color: #f59e0b; color: #f59e0b; background: #000; transform: scale(1.2); }
-        .active-lit { box-shadow: 0 0 25px #8b5cf6; border-color: #8b5cf6; color: #8b5cf6; background: #000; transform: scale(1.2); }
-        .active-lock { box-shadow: 0 0 15px #555; border-color: #555; color: #eee; background: #222; }
-
-        /* APP 列表项 */
-        .app-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px; margin-bottom: 10px;
-            border-left: 4px solid transparent;
-            transition: 0.2s;
-            cursor: pointer; /* 整个条目都可点击 */
+        /* 深读 · 紫罗兰风格 */
+        body { 
+            background: #0a0510; 
+            color: #d8b4fe; 
+            font-family: 'Noto Serif SC', serif; 
+            overflow-x: hidden;
+            transition: background 1s ease;
         }
         
-        /* 按钮修正：添加 cursor: pointer */
-        .app-btn {
-            padding: 5px 15px; border: 1px solid #444; 
-            font-size: 10px; font-weight: bold; background: #000;
-            white-space: nowrap; 
-            cursor: pointer; /* ✅ 鼠标变成小手 */
-            transition: all 0.3s ease;
+        /* 阅读容器 */
+        .reader-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            min-height: 100vh;
+            border-left: 1px solid #2e1065;
+            border-right: 1px solid #2e1065;
+            background: #0f0718;
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.05);
         }
+
+        /* 🟢 修复：高透玻璃墙 (只挡操作，不挡视线) */
+        #glass-wall { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 999; 
+            /* 修改这里：透明度 0.1 (非常通透)，加一点模糊 */
+            background: rgba(139, 92, 246, 0.05); 
+            backdrop-filter: blur(2px);
+            cursor: not-allowed; 
+            display: block; /* 默认显示 */
+        }
+
+        /* 锁定的标记 (右上角) */
+        .lock-badge {
+            position: absolute; top: 20px; right: 20px;
+            border: 1px solid #8b5cf6; color: #8b5cf6;
+            padding: 5px 15px; font-size: 12px; border-radius: 4px;
+            background: rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+
+        /* 拦截弹窗 (点击玻璃墙才显示) */
+        #auth-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 1000; 
+            background: rgba(10, 5, 16, 0.9); /* 弹窗背景要深 */
+            display: none; align-items: center; justify-content: center; 
+        }
+
+        .lock-card { border: 1px solid #8b5cf6; padding: 40px; text-align: center; max-width: 400px; background: #180828; box-shadow: 0 0 40px rgba(139, 92, 246, 0.2); }
+        .btn-purple { background: #2e1065; color: #d8b4fe; border: 1px solid #8b5cf6; padding: 10px 30px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; letter-spacing: 2px; }
+        .btn-purple:hover { background: #8b5cf6; color: #fff; box-shadow: 0 0 20px #8b5cf6; }
+
+        /* 输入区 */
+        textarea {
+            width: 100%; height: 200px;
+            background: #180828; color: #e9d5ff;
+            border: 1px dashed #581c87;
+            padding: 20px;
+            font-size: 16px;
+            outline: none;
+            resize: vertical;
+            line-height: 1.8;
+        }
+        textarea:focus { border-color: #a855f7; }
+
+        /* 分析结果卡片 */
+        .insight-card {
+            border-left: 3px solid #a855f7;
+            background: rgba(168, 85, 247, 0.1);
+            padding: 20px;
+            margin-top: 30px;
+            animation: fadeIn 1s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 选中文字的高亮 */
+        ::selection { background: #581c87; color: white; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-center py-10">
+<body>
 
-    <div id="app" class="nexus-container" style="display: none;">
-        
-        <!-- 头部 -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-white mb-2 uppercase tracking-[0.2em]">Shensi-ST</h1>
-            <div class="h-px w-20 bg-yellow-800 mx-auto mb-3"></div>
-            <p class="text-[10px] text-gray-500 tracking-[0.5em] uppercase">Digital Sovereignty Nexus</p>
-        </div>
+    <!-- 🛡️ 会员玻璃墙 (点击触发弹窗) -->
+    <div id="glass-wall" onclick="document.getElementById('auth-modal').style.display='flex'">
+        <div class="lock-badge">🔒 游客预览模式</div>
+    </div>
 
-        <!-- 1. 登录界面 -->
-        <div v-if="!user" class="nexus-border p-10 w-full animate-pulse">
-            <div class="text-center mb-8">
-                <i class="fas fa-fingerprint text-4xl text-gray-600 mb-4"></i>
-                <p class="text-xs text-gray-400 tracking-widest uppercase">Identity Verification Required</p>
-            </div>
-            
-            <input v-model="email" type="email" placeholder="ENTER ACCESS EMAIL" class="input-dark">
-            <button @click="handleLogin" :disabled="loading" class="btn-main">
-                {{ loading ? 'CONNECTING...' : 'INITIALIZE SYSTEM' }}
-            </button>
-            <p class="text-[10px] text-center text-gray-700 mt-4">SECURE LINK v2.1</p>
-        </div>
-
-        <!-- 2. 主控制台 -->
-        <div v-else class="w-full">
-            
-            <!-- 身份条 -->
-            <div class="flex justify-between items-center text-[10px] text-gray-500 mb-4 px-2 border-b border-gray-900 pb-2">
-                <div>OP: <span class="text-white font-mono">{{ user.email.split('@')[0] }}</span></div>
-                <div class="border px-2 py-0.5 border-gray-800" :class="isVip ? 'text-yellow-500' : 'text-gray-500'">
-                    {{ isVip ? 'ARCHITECT' : 'MEMBER' }}
-                </div>
-            </div>
-
-            <!-- 🎡 魔法轮 (Magic Wheel) -->
-            <div class="wheel-wrapper">
-                <div class="magic-wheel-container">
-                    <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
-                        
-                        <!-- 0: Music (Green) -->
-                        <div class="wheel-item pos-0" :class="{'active-music': activeTab === 'music'}" @click="switchTab('music', 0)">
-                            <i class="fas fa-music"></i>
-                        </div>
-                        
-                        <!-- 1: Cinema (Gold) -->
-                        <div class="wheel-item pos-1" :class="{'active-cinema': activeTab === 'visual'}" @click="switchTab('visual', 1)">
-                            <i class="fas fa-film"></i>
-                        </div>
-                        
-                        <!-- 2: Literature (Purple) -->
-                        <div class="wheel-item pos-2" :class="{'active-lit': activeTab === 'literature'}" @click="switchTab('literature', 2)">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        
-                        <!-- 3: Locked (Gray) -->
-                        <div class="wheel-item pos-3" :class="{'active-lock': activeTab === 'locked'}" @click="switchTab('locked', 3)">
-                            <i class="fas fa-lock"></i>
-                        </div>
-
-                    </div>
-                    <!-- 中心 -->
-                    <div class="wheel-center">ST</div>
-                </div>
-            </div>
-
-            <!-- 📂 动态资产列表 -->
-            <div class="min-h-[300px] w-full">
-                
-                <!-- 标题 -->
-                <div class="text-center mb-6">
-                    <h2 class="text-lg font-bold tracking-[0.3em] uppercase" :class="titleColor">
-                        {{ activeTitle }}
-                    </h2>
-                </div>
-
-                <!-- 列表渲染 -->
-                <div v-if="activeTab !== 'locked'">
-                    <div v-for="app in currentList" :key="app.slug" @click="openApp(app)"
-                         class="nexus-border app-item cursor-pointer hover:bg-gray-900 group"
-                         :style="{ borderLeftColor: activeColor }">
-                        
-                        <div class="flex-1 pr-4">
-                            <div class="text-xs font-bold text-gray-300 group-hover:text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
-                            <div class="text-[10px] text-gray-600 font-mono">{{ app.description }}</div>
-                        </div>
-                        
-                        <!-- 实体按钮 -->
-                        <div class="app-btn group-hover:bg-white group-hover:text-black" 
-                             :style="{ color: activeColor, borderColor: activeColor }">
-                            OPEN >
-                        </div>
-                    </div>
-                    
-                    <div v-if="currentList.length === 0" class="text-center text-[10px] text-gray-700 py-10 border border-dashed border-gray-900">
-                        [ NO MODULES ACTIVE ]
-                    </div>
-                </div>
-
-                <!-- 锁定界面 -->
-                <div v-if="activeTab === 'locked'" class="text-center py-10 opacity-30">
-                    <i class="fas fa-cube text-4xl mb-4 text-gray-500"></i>
-                    <p class="text-xs text-gray-500 tracking-widest">FOURTH DIMENSION</p>
-                    <p class="text-[10px] mt-2">UNDER CONSTRUCTION</p>
-                </div>
-
-            </div>
-
-            <!-- 底部功能 -->
-            <div class="mt-8 border-t border-gray-900 pt-4 flex justify-between items-center px-2">
-                <div class="text-[10px] text-gray-500 cursor-pointer hover:text-white" @click="showInvites = !showInvites">
-                    GIFT CODES ({{ myInvites.length }})
-                </div>
-                <div class="text-[10px] text-red-900 cursor-pointer hover:text-red-500" @click="signOut">
-                    [ LOGOUT ]
-                </div>
-            </div>
-
-            <!-- 邀请码面板 -->
-            <div v-if="showInvites" class="mt-4 nexus-border p-4">
-                <div v-for="inv in myInvites" :key="inv.id" class="flex justify-between items-center mb-2 text-[10px] border-b border-gray-800 pb-1">
-                    <span :class="inv.is_used ? 'text-gray-700 line-through' : 'text-yellow-600 font-bold'">{{ inv.code }}</span>
-                    <span v-if="!inv.is_used" class="text-gray-500 cursor-pointer hover:text-white" @click="copyCode(inv.code)">COPY</span>
-                    <span v-else class="text-gray-800">USED</span>
-                </div>
-                <!-- 激活入口 -->
-                <div class="mt-4 flex gap-2">
-                    <input v-model="inviteCode" placeholder="ACTIVATE CODE" class="bg-black border border-gray-800 text-[10px] p-2 flex-1 text-center text-gray-500 outline-none focus:border-yellow-600">
-                    <button @click="redeem" class="bg-gray-900 text-gray-500 text-[10px] px-4 hover:bg-gray-800 hover:text-white">EXEC</button>
-                </div>
-            </div>
-
+    <!-- 拦截弹窗 -->
+    <div id="auth-modal">
+        <div class="lock-card">
+            <h2 class="text-2xl font-bold mb-4 tracking-widest text-purple-400">DEEP READ LOCKED</h2>
+            <p class="text-xs mb-8 text-purple-300" style="line-height: 1.6;">
+                深度阅读与 AI 解析功能<br>
+                仅对 <strong>神思庭会员</strong> 开放
+            </p>
+            <a href="https://shensi-nexus.vercel.app" class="btn-purple" style="text-decoration:none;">获取通行证</a>
+            <div style="margin-top: 20px; font-size: 12px; color: #666; cursor: pointer;" onclick="document.getElementById('auth-modal').style.display='none'">[ 继续预览界面 ]</div>
         </div>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
+    <!-- 顶部 -->
+    <div class="fixed top-0 left-0 w-full p-4 flex justify-between items-center bg-opacity-90 bg-[#0a0510] z-50 border-b border-purple-900/30">
+        <div>
+            <h1 class="text-xl font-bold tracking-[0.2em] text-white">DEEP READ</h1>
+            <p class="text-[10px] text-purple-500">AI IMMERSIVE READING TERMINAL</p>
+        </div>
+        <div class="text-[10px] text-purple-800 font-mono" id="user-status">WAITING LINK...</div>
+    </div>
 
-        window.onload = function() {
+    <!-- 主界面 -->
+    <div class="reader-container mt-16">
+        
+        <!-- 1. 输入模式 -->
+        <div id="input-mode">
+            <p class="text-xs text-purple-500 mb-4 tracking-widest uppercase text-center">- Input Text Source -</p>
+            <textarea id="text-input" placeholder="在此粘贴文章、小说片段或哲学文本...&#10;&#10;AI 将为您进行深度解析、情绪渲染与潜台词挖掘。"></textarea>
+            
+            <div class="flex justify-center mt-6">
+                <button onclick="enterReadMode()" class="btn-purple">
+                    ENTER DEEP READING
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. 阅读模式 (默认隐藏) -->
+        <div id="read-mode" class="hidden">
+            <div class="flex justify-between mb-8 text-xs text-purple-600 border-b border-purple-900/30 pb-2">
+                <span onclick="exitReadMode()" class="cursor-pointer hover:text-white">&larr; BACK TO EDIT</span>
+                <span>AI ANALYSIS READY</span>
+            </div>
+
+            <!-- 正文显示区 -->
+            <div id="article-content" class="text-lg leading-relaxed text-gray-300 mb-12" onmouseup="checkSelection()"></div>
+
+            <!-- AI 侧边栏/底部栏 -->
+            <div id="ai-panel" class="hidden">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-bold text-purple-400 tracking-widest">GEMINI INSIGHT</span>
+                </div>
+                <div id="ai-content" class="insight-card text-sm text-purple-200 font-sans">
+                    Thinking...
+                </div>
+            </div>
+
+            <!-- 全文分析按钮 -->
+            <div class="text-center mt-16 border-t border-purple-900/30 pt-8">
+                <button onclick="analyzeFullText()" id="analyze-btn" class="text-xs text-purple-500 hover:text-white border border-purple-800 px-4 py-2 rounded hover:bg-purple-900 transition">
+                    ⚡ ANALYZE FULL TEXT STRUCTURE
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 🧠 逻辑核心 -->
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // ================= 配置区 =================
+        const APP_SLUG = 'shensi-read'; 
+        const SB_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
+        // 🔑 你的 Google Key
+        const GEMINI_KEY = 'AIzaSyAAilSsHdHTUseTZYxw-Wp0H9dtH-F_zpc'; 
+        // =========================================
+
+        let fullText = "";
+
+        // 1. 鉴权
+        (async function initAuth() {
             try {
-                if (typeof Vue === 'undefined' || typeof supabase === 'undefined') throw new Error("Network Error");
+                const sb = supabase.createClient(SB_URL, SB_KEY);
+                const { data: { session } } = await sb.auth.getSession();
+                if (session) {
+                    document.getElementById('glass-wall').style.display = 'none';
+                    document.getElementById('user-status').innerText = "LINKED: " + session.user.email;
+                }
+            } catch (e) { console.error("Auth Error", e); }
+        })();
 
-                const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                const { createApp, ref, onMounted, computed } = Vue;
+        // 2. 模式切换
+        window.enterReadMode = () => {
+            const text = document.getElementById('text-input').value;
+            if(!text) return alert("请输入文本");
+            
+            fullText = text;
+            // 简单的格式化：换行转段落
+            const html = text.split('\n').map(p => p.trim() ? `<p class="mb-4">${p}</p>` : '').join('');
+            
+            document.getElementById('article-content').innerHTML = html;
+            document.getElementById('input-mode').classList.add('hidden');
+            document.getElementById('read-mode').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
 
-                createApp({
-                    setup() {
-                        const user = ref(null);
-                        const email = ref('');
-                        const loading = ref(false);
-                        const apps = ref([]);
-                        const myInvites = ref([]);
-                        const inviteCode = ref('');
-                        const showInvites = ref(false);
-                        const role = ref('guest');
+        window.exitReadMode = () => {
+            document.getElementById('input-mode').classList.remove('hidden');
+            document.getElementById('read-mode').classList.add('hidden');
+            document.getElementById('ai-panel').classList.add('hidden');
+        }
+
+        // 3. 选中文本触发 AI
+        window.checkSelection = async () => {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+            
+            if (selectedText.length > 5) {
+                // 显示面板
+                const panel = document.getElementById('ai-panel');
+                const content = document.getElementById('ai-content');
+                panel.classList.remove('hidden');
+                content.innerHTML = "Analyzing selection...";
+                
+                try {
+                    const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+                    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+                    const prompt = `
+                        Analyze the following text selection from a literary perspective.
+                        1. Explain the subtext or hidden meaning.
+                        2. Identify the emotional tone.
+                        3. If there are metaphors, explain them.
                         
-                        const activeTab = ref('music'); 
-                        const wheelRotation = ref(0);
-
-                        const initSystem = async () => {
-                            const { data: profile } = await sbClient.from('profiles').select('role').eq('id', user.value.id).single();
-                            role.value = profile?.role || 'guest';
-
-                            if (role.value !== 'guest') {
-                                const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
-                                apps.value = appsData || [];
-                                const { data: invites } = await sbClient.from('invite_codes').select('*').eq('created_by', user.value.id).order('is_used', { ascending: true });
-                                myInvites.value = invites || [];
-                            }
-                        };
-
-                        onMounted(async () => {
-                            const { data: { session } } = await sbClient.auth.getSession();
-                            if (session) {
-                                user.value = session.user;
-                                await initSystem();
-                            }
-                            sbClient.auth.onAuthStateChange((_e, session) => {
-                                user.value = session?.user || null;
-                                if(user.value) initSystem();
-                            });
-                            document.getElementById('app').style.display = 'block';
-                        });
-
-                        const switchTab = (tab, index) => {
-                            activeTab.value = tab;
-                            wheelRotation.value = -90 - (index * 90);
-                        };
-
-                        const isVip = computed(() => role.value === 'architect' || role.value === 'member');
+                        Keep it concise (under 100 words). Use HTML formatting (<b>, <br>).
                         
-                        const currentList = computed(() => {
-                            if(activeTab.value === 'music') return apps.value.filter(a => !a.category || a.category === 'music');
-                            if(activeTab.value === 'visual') return apps.value.filter(a => a.category === 'visual');
-                            if(activeTab.value === 'literature') return apps.value.filter(a => a.category === 'literature');
-                            return [];
-                        });
+                        Text: "${selectedText}"
+                    `;
 
-                        const activeTitle = computed(() => {
-                            if(activeTab.value === 'music') return 'MUSIC MATRIX';
-                            if(activeTab.value === 'visual') return 'CINEMA MATRIX';
-                            if(activeTab.value === 'literature') return 'LITERATURE MATRIX';
-                            return 'LOCKED SECTOR';
-                        });
+                    const result = await model.generateContent(prompt);
+                    const response = await result.response;
+                    content.innerHTML = response.text();
 
-                        const titleColor = computed(() => {
-                            if(activeTab.value === 'music') return 'text-green-500';
-                            if(activeTab.value === 'visual') return 'text-yellow-500';
-                            if(activeTab.value === 'literature') return 'text-purple-500';
-                            return 'text-gray-500';
-                        });
+                } catch (error) {
+                    console.error(error);
+                    content.innerText = "AI Connection Failed.";
+                }
+            }
+        };
 
-                        const activeColor = computed(() => {
-                            if(activeTab.value === 'music') return '#10b981';
-                            if(activeTab.value === 'visual') return '#f59e0b';
-                            if(activeTab.value === 'literature') return '#8b5cf6';
-                            return '#555';
-                        });
+        // 4. 全文分析
+        window.analyzeFullText = async () => {
+            const btn = document.getElementById('analyze-btn');
+            const panel = document.getElementById('ai-panel');
+            const content = document.getElementById('ai-content');
+            
+            btn.innerText = "READING...";
+            btn.disabled = true;
+            panel.classList.remove('hidden');
+            content.innerHTML = "Scanning full text structure...";
 
-                        const handleLogin = async () => {
-                            if (!email.value) return alert('EMAIL REQUIRED');
-                            loading.value = true;
-                            const { error } = await sbClient.auth.signInWithOtp({ email: email.value });
-                            if (error) alert(error.message);
-                            else alert('CHECK INBOX: ' + email.value);
-                            loading.value = false;
-                        };
+            try {
+                const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-                        const redeem = async () => {
-                            if (!inviteCode.value) return;
-                            const { data: codeData } = await sbClient.from('invite_codes').select('*').eq('code', inviteCode.value).eq('is_used', false).single();
-                            if (!codeData) return alert('INVALID CODE');
+                const prompt = `
+                    Analyze this entire text.
+                    Provide a "Literary Report":
+                    1. Core Theme (一句话总结核心思想)
+                    2. Tone Analysis (整体基调)
+                    3. Key Keywords (5个关键词)
+                    4. Reading Suggestion (读者应该带着什么问题去读)
 
-                            let newRole = 'member';
-                            if (codeData.type === 'ALL') newRole = 'architect';
+                    Output as HTML.
+                    
+                    Text: ${fullText.substring(0, 5000)} ... (truncated if too long)
+                `;
 
-                            let expireDate = new Date();
-                            expireDate.setDate(expireDate.getDate() + codeData.days);
-                            const perms = { 'ALL': expireDate.toISOString() };
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                content.innerHTML = response.text();
+                
+                btn.innerText = "ANALYSIS COMPLETE";
 
-                            await sbClient.from('profiles').update({ permissions: perms, role: newRole }).eq('id', user.value.id);
-                            await sbClient.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
-
-                            alert('ACCESS GRANTED');
-                            inviteCode.value = '';
-                            initSystem();
-                        };
-
-                        const copyCode = (c) => navigator.clipboard.writeText(c);
-                        const openApp = (app) => window.open(app.url, '_blank');
-                        const signOut = () => sbClient.auth.signOut();
-
-                        return { 
-                            user, email, loading, myInvites, inviteCode, showInvites,
-                            handleLogin, signOut, isVip, redeem, copyCode, openApp,
-                            activeTab, wheelRotation, switchTab, currentList, activeTitle, titleColor, activeColor
-                        };
-                    }
-                }).mount('#app');
-            } catch (err) { console.error(err); }
+            } catch (error) {
+                console.error(error);
+                content.innerText = "Full text analysis failed.";
+            }
         };
     </script>
 </body>
