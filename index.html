@@ -33,10 +33,8 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 bg-black">
 
-    <!-- 容器宽度增加到 1000px，让左右分栏更宽敞 -->
     <div id="app" style="width: 100%; max-width: 1000px; display: none;">
         
-        <!-- 头部 (居中) -->
         <div class="text-center mb-10">
             <h1 class="text-4xl font-bold text-white mb-2 uppercase tracking-[0.2em]">Shensi-ST</h1>
             <div class="h-px w-16 bg-yellow-800 mx-auto mb-3"></div>
@@ -55,7 +53,7 @@
         <!-- 控制台界面 -->
         <div v-else class="space-y-6">
             
-            <!-- 身份卡片 (始终居中) -->
+            <!-- 身份卡片 -->
             <div class="max-w-md mx-auto nexus-border p-6 border-t-2 relative" :class="isVip ? 'border-vip' : 'border-normal'">
                 <div class="flex justify-between text-[10px] text-gray-500 mb-5 uppercase tracking-widest">
                     <span>Current Entity</span>
@@ -83,7 +81,7 @@
                 <button @click="redeem" class="bg-gray-900 text-gray-400 border border-gray-800 px-5 font-bold text-xs hover:text-yellow-500 hover:border-yellow-600 transition-colors">EXEC</button>
             </div>
 
-            <!-- 🚀 双列资产列表 (核心升级区) -->
+            <!-- 双列资产列表 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
                 
                 <!-- 左列：音乐矩阵 -->
@@ -92,7 +90,6 @@
                         <h2 class="text-green-500 font-bold tracking-widest text-sm">MUSIC MATRIX</h2>
                         <span class="text-[10px] text-green-800">音乐音频类</span>
                     </div>
-                    
                     <div v-if="musicApps.length > 0" class="grid gap-4">
                         <div v-for="app in musicApps" :key="app.slug" class="nexus-border p-4 cursor-pointer hover:bg-gray-900 transition group app-card border-l-2 border-transparent hover:border-green-600" @click="openApp(app)">
                             <div>
@@ -111,7 +108,6 @@
                         <h2 class="text-yellow-600 font-bold tracking-widest text-sm">CINEMA MATRIX</h2>
                         <span class="text-[10px] text-yellow-800">影视视觉类</span>
                     </div>
-
                     <div v-if="visualApps.length > 0" class="grid gap-4">
                         <div v-for="app in visualApps" :key="app.slug" class="nexus-border p-4 cursor-pointer hover:bg-gray-900 transition group app-card border-l-2 border-transparent hover:border-yellow-600" @click="openApp(app)">
                             <div>
@@ -145,7 +141,7 @@
 
     <script>
         const SUPABASE_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_KEY_HERE';
 
         window.onload = function() {
             try {
@@ -166,6 +162,7 @@
                         const userCount = ref(0);
 
                         const initSystem = async () => {
+                            if(!user.value) return;
                             const { data: profile } = await sbClient.from('profiles').select('role').eq('id', user.value.id).single();
                             role.value = profile?.role || 'guest';
 
@@ -206,9 +203,14 @@
                         };
 
                         const isVip = computed(() => role.value === 'architect' || role.value === 'member');
-                        
-                        const musicApps = computed(() => apps.value.filter(a => !a.category || a.category === 'music'));
-                        const visualApps = computed(() => apps.value.filter(a => a.category === 'visual'));
+
+                        // 左侧：严格音乐
+                        const musicApps = computed(() => apps.value.filter(a => a.category === 'music'));
+
+                        // 右侧：影视 + 强制包含 shensi-sonic-weaver & shensi-voice-alchemy
+                        const visualApps = computed(() => apps.value.filter(a => 
+                            a.category === 'visual' || ['shensi-sonic-weaver', 'shensi-voice-alchemy'].includes(a.slug)
+                        ));
 
                         const redeem = async () => {
                             if (!inviteCode.value) return;
