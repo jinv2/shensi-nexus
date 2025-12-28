@@ -18,13 +18,13 @@
         .btn-main:hover { background: #fff; box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
         .input-dark { background: #000; border: 1px solid #444; color: #d4af37; width: 100%; padding: 12px; text-align: center; outline: none; transition: 0.3s; }
         .status-dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+        .count-glow { text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
         
-        /* 邀请码列表样式 */
-        .invite-card { background: #111; border: 1px dashed #444; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
-        .code-text { color: #d4af37; font-weight: bold; letter-spacing: 1px; }
-        .copy-btn { color: #888; cursor: pointer; text-decoration: underline; }
-        .copy-btn:hover { color: #fff; }
-        .used-tag { color: #d4af37; opacity: 0.5; text-decoration: line-through; }
+        .border-vip { border-color: #d4af37; }
+        .border-normal { border-color: #333; }
+        
+        /* 分类标题样式 */
+        .category-title { color: #666; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 15px; margin-top: 30px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 bg-black">
@@ -51,81 +51,74 @@
         <div v-else class="space-y-6">
             
             <!-- 身份卡片 -->
-            <div class="nexus-border p-6 border-t-2 relative" :class="isArchitect ? 'border-yellow-600' : 'border-gray-700'">
+            <div class="nexus-border p-6 border-t-2 relative" :class="isVip ? 'border-vip' : 'border-normal'">
                 <div class="flex justify-between text-[10px] text-gray-500 mb-5 uppercase tracking-widest">
                     <span>Current Entity</span>
-                    <span class="border px-2 py-0.5" :class="isArchitect ? 'text-yellow-500 border-yellow-600' : 'text-gray-400 border-gray-600'">
-                        {{ roleLabel }}
+                    <span class="border px-2 py-0.5" :class="isVip ? 'text-yellow-500 border-yellow-600' : 'text-gray-400 border-gray-600'">
+                        {{ isVip ? 'ARCHITECT' : 'MEMBER' }}
                     </span>
                 </div>
-                
                 <div class="text-gray-200 font-bold text-sm tracking-wider mb-2 font-mono">{{ user.email }}</div>
-                
-                <div v-if="isActive" class="text-[10px] text-green-500 flex items-center pt-3 border-t border-gray-800/50">
-                    <span class="status-dot bg-green-500"></span> ACCESS AUTHORIZED
+                <div v-if="isVip" class="text-[10px] text-yellow-500 flex items-center pt-3 border-t border-gray-800/50">
+                    <span class="status-dot bg-yellow-500 animate-pulse"></span> SYSTEM CONTROL: FULL
                 </div>
-                <div v-else class="text-[10px] text-red-500 flex items-center pt-3 border-t border-gray-800/50">
-                    <span class="status-dot bg-red-500 animate-pulse"></span> ACCOUNT INACTIVE
+                <div v-else class="text-[10px] text-blue-500 flex items-center pt-3 border-t border-gray-800/50">
+                    <span class="status-dot bg-blue-500"></span> ACCESS: AUTHORIZED
                 </div>
-
-                <!-- 架构师可见人数 -->
-                <div v-if="isArchitect && userCount > 0" class="absolute top-6 right-6 text-right">
+                <div v-if="isVip && userCount > 0" class="absolute top-6 right-6 text-right">
                     <div class="text-[10px] text-gray-600 uppercase tracking-widest">Linked</div>
-                    <div class="text-xl text-yellow-600 font-bold">{{ userCount }}</div>
+                    <div class="text-xl text-yellow-600 font-bold count-glow">{{ userCount }}</div>
                 </div>
-
                 <button @click="signOut" class="text-[10px] text-red-900 hover:text-red-500 mt-4 w-full text-right tracking-[0.2em] uppercase transition-colors">Terminate</button>
             </div>
 
-            <!-- 1. 激活层 (未激活显示) -->
-            <div v-if="!isActive" class="nexus-border p-6 text-center border border-dashed border-yellow-900">
-                <h3 class="text-yellow-500 text-sm mb-4 uppercase tracking-widest">Invitation Required</h3>
-                <p class="text-[10px] text-gray-500 mb-4">请输入邀请码以激活会员权限</p>
-                <input v-model="inviteCode" placeholder="ENTER CODE" class="input-dark text-xs uppercase tracking-widest mb-4">
-                <button @click="redeem" class="btn-main text-xs">ACTIVATE ACCOUNT</button>
+            <!-- 邀请码输入 -->
+            <div class="nexus-border p-4 flex gap-3">
+                <input v-model="inviteCode" placeholder="PROTOCOL CODE" class="input-dark text-xs uppercase tracking-widest">
+                <button @click="redeem" class="bg-gray-900 text-gray-400 border border-gray-800 px-5 font-bold text-xs hover:text-yellow-500 hover:border-yellow-600 transition-colors">EXEC</button>
             </div>
 
-            <!-- 2. 已激活功能区 -->
-            <div v-if="isActive">
+            <!-- 🚀 分类资产列表 -->
+            <div class="mb-10">
                 
-                <!-- 资产列表 -->
-                <div class="mb-8">
-                    <p class="text-[10px] text-center text-gray-800 mb-5 tracking-[0.4em] uppercase border-b border-gray-900 pb-2">- Neural Links -</p>
-                    <div v-for="app in apps" :key="app.slug" class="nexus-border p-4 mb-3 flex justify-between items-center cursor-pointer hover:bg-gray-900 transition group" @click="openApp(app)">
+                <!-- 1. 视觉与工具类 -->
+                <div v-if="visualApps.length > 0">
+                    <div class="category-title">Visual / Productivity</div>
+                    <div v-for="app in visualApps" :key="app.slug" class="nexus-border p-4 mb-3 flex justify-between items-center cursor-pointer hover:bg-gray-900 transition group" @click="openApp(app)">
+                        <div>
+                            <div class="text-xs font-bold text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
+                            <div class="text-[10px] text-gray-500 font-mono">{{ app.description }}</div>
+                        </div>
+                        <div class="text-[10px] text-yellow-600 group-hover:text-yellow-400 font-bold">[ RUN ]</div>
+                    </div>
+                </div>
+
+                <!-- 2. 音乐矩阵类 -->
+                <div v-if="musicApps.length > 0">
+                    <div class="category-title">Shensi Music Matrix</div>
+                    <div v-for="app in musicApps" :key="app.slug" class="nexus-border p-4 mb-3 flex justify-between items-center cursor-pointer hover:bg-gray-900 transition group" @click="openApp(app)">
                         <div>
                             <div class="text-xs font-bold text-gray-400 group-hover:text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
                             <div class="text-[10px] text-gray-700 font-mono">{{ app.description }}</div>
                         </div>
-                        <div class="text-[10px] text-green-700 group-hover:text-green-500">
-                            [ OPEN > ]
-                        </div>
+                        <div class="text-[10px] text-green-700 group-hover:text-green-500">[ OPEN > ]</div>
                     </div>
                 </div>
 
-                <!-- 🆕 我的赠送码 (裂变系统) -->
-                <div class="nexus-border p-4">
-                    <div class="text-[10px] text-gray-500 mb-4 uppercase tracking-widest flex justify-between">
-                        <span>Gift Codes ({{ myInvites.length }})</span>
-                        <span class="text-gray-700">Invite Friends</span>
-                    </div>
-
-                    <div v-if="myInvites.length === 0" class="text-center text-[10px] text-gray-700 py-2">
-                        [ NO CODES AVAILABLE ]
-                    </div>
-
-                    <div v-for="inv in myInvites" :key="inv.id" class="invite-card">
-                        <span :class="inv.is_used ? 'used-tag' : 'code-text'">{{ inv.code }}</span>
-                        <span v-if="!inv.is_used" class="copy-btn" @click="copyCode(inv.code)">COPY</span>
-                        <span v-else class="text-gray-700">USED</span>
-                    </div>
+            </div>
+            
+            <!-- 裂变赠送码 -->
+            <div class="nexus-border p-4">
+                <div class="text-[10px] text-gray-500 mb-4 uppercase tracking-widest flex justify-between">
+                    <span>Gift Codes ({{ myInvites.length }})</span>
+                    <span class="text-gray-700">Invite Friends</span>
                 </div>
-
-                <!-- 架构师入口 -->
-                <div v-if="!isArchitect" class="mt-8 text-center opacity-30 hover:opacity-100 transition">
-                   <input v-model="inviteCode" placeholder="ARCHITECT CODE" class="bg-black border border-gray-900 text-[10px] text-gray-600 text-center p-2 w-1/3 focus:outline-none focus:border-yellow-900">
-                   <button @click="redeem" class="text-[10px] text-gray-600 ml-2 hover:text-yellow-600">UPGRADE</button>
+                <div v-if="myInvites.length === 0" class="text-center text-[10px] text-gray-700 py-2">[ NO CODES AVAILABLE ]</div>
+                <div v-for="inv in myInvites" :key="inv.id" class="flex justify-between items-center mb-2 text-[10px] border-b border-gray-800 pb-1">
+                    <span :class="inv.is_used ? 'text-gray-700 line-through' : 'text-yellow-600 font-bold'">{{ inv.code }}</span>
+                    <span v-if="!inv.is_used" class="text-gray-500 cursor-pointer hover:text-white" @click="copyCode(inv.code)">COPY</span>
+                    <span v-else class="text-gray-800">USED</span>
                 </div>
-
             </div>
 
         </div>
@@ -148,26 +141,23 @@
                         const email = ref('');
                         const loading = ref(false);
                         const apps = ref([]);
-                        const myInvites = ref([]); // 新增：我的邀请码
+                        const myInvites = ref([]);
                         const inviteCode = ref('');
-                        const role = ref('guest'); 
+                        const role = ref('guest');
                         const userCount = ref(0);
 
                         const initSystem = async () => {
-                            // 1. 获取角色
                             const { data: profile } = await sbClient.from('profiles').select('role').eq('id', user.value.id).single();
                             role.value = profile?.role || 'guest';
 
                             if (role.value !== 'guest') {
-                                // 2. 加载应用
+                                // 拉取所有APP
                                 const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
                                 apps.value = appsData || [];
                                 
-                                // 3. 加载我的赠送码
                                 const { data: invites } = await sbClient.from('invite_codes').select('*').eq('created_by', user.value.id).order('is_used', { ascending: true });
                                 myInvites.value = invites || [];
 
-                                // 4. 架构师看人数
                                 if (role.value === 'architect') {
                                     const { count } = await sbClient.from('profiles').select('*', { count: 'exact', head: true });
                                     userCount.value = count || 0;
@@ -197,13 +187,11 @@
                             loading.value = false;
                         };
 
-                        const isArchitect = computed(() => role.value === 'architect');
-                        const isActive = computed(() => role.value === 'member' || role.value === 'architect');
-                        const roleLabel = computed(() => {
-                            if (role.value === 'architect') return 'ARCHITECT';
-                            if (role.value === 'member') return 'MEMBER';
-                            return 'GUEST (INACTIVE)';
-                        });
+                        const isVip = computed(() => role.value === 'architect' || role.value === 'member');
+                        
+                        // 🌟 分类计算属性
+                        const musicApps = computed(() => apps.value.filter(a => !a.category || a.category === 'music'));
+                        const visualApps = computed(() => apps.value.filter(a => a.category === 'visual'));
 
                         const redeem = async () => {
                             if (!inviteCode.value) return;
@@ -220,7 +208,7 @@
                             await sbClient.from('profiles').update({ permissions: perms, role: newRole }).eq('id', user.value.id);
                             await sbClient.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
 
-                            alert('ACTIVATION SUCCESSFUL');
+                            alert('ACCESS GRANTED');
                             inviteCode.value = '';
                             initSystem();
                         };
@@ -233,7 +221,7 @@
                         const openApp = (app) => window.open(app.url, '_blank');
                         const signOut = () => sbClient.auth.signOut();
 
-                        return { user, email, loading, apps, myInvites, inviteCode, handleLogin, signOut, isArchitect, isActive, roleLabel, redeem, userCount, copyCode };
+                        return { user, email, loading, musicApps, visualApps, myInvites, inviteCode, handleLogin, signOut, isVip, redeem, userCount, copyCode };
                     }
                 }).mount('#app');
             } catch (err) { console.error(err); }
