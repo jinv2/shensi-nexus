@@ -44,7 +44,7 @@
         }
         .input-dark:focus { border-color: #d4af37; }
 
-        /* === 魔法轮 (强制居中修正) === */
+        /* === 魔法轮 (Magic Wheel) === */
         .wheel-wrapper {
             display: flex; justify-content: center; align-items: center;
             width: 100%; margin: 30px 0;
@@ -93,11 +93,16 @@
             padding: 20px; margin-bottom: 10px;
             border-left: 4px solid transparent;
             transition: 0.2s;
+            cursor: pointer; /* 整个条目都可点击 */
         }
+        
+        /* 按钮修正：添加 cursor: pointer */
         .app-btn {
             padding: 5px 15px; border: 1px solid #444; 
             font-size: 10px; font-weight: bold; background: #000;
-            white-space: nowrap; /* 防止按钮换行消失 */
+            white-space: nowrap; 
+            cursor: pointer; /* ✅ 鼠标变成小手 */
+            transition: all 0.3s ease;
         }
     </style>
 </head>
@@ -112,7 +117,7 @@
             <p class="text-[10px] text-gray-500 tracking-[0.5em] uppercase">Digital Sovereignty Nexus</p>
         </div>
 
-        <!-- 1. 登录界面 (强化版) -->
+        <!-- 1. 登录界面 -->
         <div v-if="!user" class="nexus-border p-10 w-full animate-pulse">
             <div class="text-center mb-8">
                 <i class="fas fa-fingerprint text-4xl text-gray-600 mb-4"></i>
@@ -123,7 +128,7 @@
             <button @click="handleLogin" :disabled="loading" class="btn-main">
                 {{ loading ? 'CONNECTING...' : 'INITIALIZE SYSTEM' }}
             </button>
-            <p class="text-[10px] text-center text-gray-700 mt-4">SECURE LINK v2.0</p>
+            <p class="text-[10px] text-center text-gray-700 mt-4">SECURE LINK v2.1</p>
         </div>
 
         <!-- 2. 主控制台 -->
@@ -137,7 +142,7 @@
                 </div>
             </div>
 
-            <!-- 🎡 魔法轮 (Magic Wheel) - 居中容器 -->
+            <!-- 🎡 魔法轮 (Magic Wheel) -->
             <div class="wheel-wrapper">
                 <div class="magic-wheel-container">
                     <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
@@ -189,7 +194,7 @@
                             <div class="text-[10px] text-gray-600 font-mono">{{ app.description }}</div>
                         </div>
                         
-                        <!-- 实体按钮，防止消失 -->
+                        <!-- 实体按钮 -->
                         <div class="app-btn group-hover:bg-white group-hover:text-black" 
                              :style="{ color: activeColor, borderColor: activeColor }">
                             OPEN >
@@ -259,7 +264,6 @@
                         const showInvites = ref(false);
                         const role = ref('guest');
                         
-                        // 罗盘状态
                         const activeTab = ref('music'); 
                         const wheelRotation = ref(0);
 
@@ -288,13 +292,11 @@
                             document.getElementById('app').style.display = 'block';
                         });
 
-                        // 🎡 旋转逻辑
                         const switchTab = (tab, index) => {
                             activeTab.value = tab;
                             wheelRotation.value = -90 - (index * 90);
                         };
 
-                        // 计算属性
                         const isVip = computed(() => role.value === 'architect' || role.value === 'member');
                         
                         const currentList = computed(() => {
