@@ -24,22 +24,26 @@
         .border-normal { border-color: #333; }
         
         /* 分类标题样式 */
-        .category-title { color: #666; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 15px; margin-top: 30px; }
+        .category-title { color: #666; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 15px; text-align: center; }
+        
+        /* 响应式调整：应用卡片高度统一，对齐更好看 */
+        .app-card { height: 100px; display: flex; flex-direction: column; justify-content: space-between; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 bg-black">
 
-    <div id="app" style="width: 100%; max-width: 420px; display: none;">
+    <!-- 容器宽度增加到 900px 以容纳双列 -->
+    <div id="app" style="width: 100%; max-width: 900px; display: none;">
         
-        <!-- 头部 -->
+        <!-- 头部 (居中) -->
         <div class="text-center mb-10">
             <h1 class="text-4xl font-bold text-white mb-2 uppercase tracking-[0.2em]">Shensi-ST</h1>
             <div class="h-px w-16 bg-yellow-800 mx-auto mb-3"></div>
             <p class="text-[10px] text-gray-500 tracking-[0.6em] uppercase">Digital Sovereignty Nexus</p>
         </div>
 
-        <!-- 登录界面 -->
-        <div v-if="!user" class="nexus-border p-8 border-t-2 border-gray-800">
+        <!-- 登录界面 (居中，宽度限制) -->
+        <div v-if="!user" class="max-w-md mx-auto nexus-border p-8 border-t-2 border-gray-800">
             <p class="text-[10px] text-center text-gray-500 mb-8 tracking-[0.3em] uppercase">[ Identity Verification ]</p>
             <input v-model="email" type="email" placeholder="ACCESS EMAIL" class="input-dark mb-6 text-xs tracking-widest">
             <button @click="handleLogin" :disabled="loading" class="btn-main text-xs">
@@ -50,8 +54,8 @@
         <!-- 控制台界面 -->
         <div v-else class="space-y-6">
             
-            <!-- 身份卡片 -->
-            <div class="nexus-border p-6 border-t-2 relative" :class="isVip ? 'border-vip' : 'border-normal'">
+            <!-- 身份卡片 (居中，宽度限制) -->
+            <div class="max-w-md mx-auto nexus-border p-6 border-t-2 relative" :class="isVip ? 'border-vip' : 'border-normal'">
                 <div class="flex justify-between text-[10px] text-gray-500 mb-5 uppercase tracking-widest">
                     <span>Current Entity</span>
                     <span class="border px-2 py-0.5" :class="isVip ? 'text-yellow-500 border-yellow-600' : 'text-gray-400 border-gray-600'">
@@ -72,43 +76,49 @@
                 <button @click="signOut" class="text-[10px] text-red-900 hover:text-red-500 mt-4 w-full text-right tracking-[0.2em] uppercase transition-colors">Terminate</button>
             </div>
 
-            <!-- 邀请码输入 -->
-            <div class="nexus-border p-4 flex gap-3">
+            <!-- 邀请码输入 (居中，宽度限制) -->
+            <div class="max-w-md mx-auto nexus-border p-4 flex gap-3">
                 <input v-model="inviteCode" placeholder="PROTOCOL CODE" class="input-dark text-xs uppercase tracking-widest">
                 <button @click="redeem" class="bg-gray-900 text-gray-400 border border-gray-800 px-5 font-bold text-xs hover:text-yellow-500 hover:border-yellow-600 transition-colors">EXEC</button>
             </div>
 
-            <!-- 🚀 分类资产列表 -->
-            <div class="mb-10">
+            <!-- 🚀 双列资产列表 (核心修改区域) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
                 
-                <!-- 1. 视觉与工具类 -->
-                <div v-if="visualApps.length > 0">
-                    <div class="category-title">Visual / Productivity</div>
-                    <div v-for="app in visualApps" :key="app.slug" class="nexus-border p-4 mb-3 flex justify-between items-center cursor-pointer hover:bg-gray-900 transition group" @click="openApp(app)">
-                        <div>
-                            <div class="text-xs font-bold text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
-                            <div class="text-[10px] text-gray-500 font-mono">{{ app.description }}</div>
+                <!-- 左列：音乐矩阵 -->
+                <div>
+                    <div class="category-title text-green-900">Shensi Music Matrix</div>
+                    <div v-if="musicApps.length > 0">
+                        <div v-for="app in musicApps" :key="app.slug" class="nexus-border p-4 mb-3 cursor-pointer hover:bg-gray-900 transition group app-card" @click="openApp(app)">
+                            <div>
+                                <div class="text-xs font-bold text-gray-300 group-hover:text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
+                                <div class="text-[10px] text-gray-600 font-mono line-clamp-2">{{ app.description }}</div>
+                            </div>
+                            <div class="text-[10px] text-green-700 group-hover:text-green-500 text-right mt-2">[ OPEN > ]</div>
                         </div>
-                        <div class="text-[10px] text-yellow-600 group-hover:text-yellow-400 font-bold">[ RUN ]</div>
                     </div>
+                    <div v-else class="text-[10px] text-gray-800 text-center py-4">NO MUSIC MODULES</div>
                 </div>
 
-                <!-- 2. 音乐矩阵类 -->
-                <div v-if="musicApps.length > 0">
-                    <div class="category-title">Shensi Music Matrix</div>
-                    <div v-for="app in musicApps" :key="app.slug" class="nexus-border p-4 mb-3 flex justify-between items-center cursor-pointer hover:bg-gray-900 transition group" @click="openApp(app)">
-                        <div>
-                            <div class="text-xs font-bold text-gray-400 group-hover:text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
-                            <div class="text-[10px] text-gray-700 font-mono">{{ app.description }}</div>
+                <!-- 右列：视觉与工具 -->
+                <div>
+                    <div class="category-title text-yellow-900">Visual / Productivity</div>
+                    <div v-if="visualApps.length > 0">
+                        <div v-for="app in visualApps" :key="app.slug" class="nexus-border p-4 mb-3 cursor-pointer hover:bg-gray-900 transition group app-card" @click="openApp(app)">
+                            <div>
+                                <div class="text-xs font-bold text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
+                                <div class="text-[10px] text-gray-500 font-mono line-clamp-2">{{ app.description }}</div>
+                            </div>
+                            <div class="text-[10px] text-yellow-700 group-hover:text-yellow-500 text-right mt-2 font-bold">[ RUN ]</div>
                         </div>
-                        <div class="text-[10px] text-green-700 group-hover:text-green-500">[ OPEN > ]</div>
                     </div>
+                    <div v-else class="text-[10px] text-gray-800 text-center py-4">NO VISUAL MODULES</div>
                 </div>
 
             </div>
             
-            <!-- 裂变赠送码 -->
-            <div class="nexus-border p-4">
+            <!-- 裂变赠送码 (底部居中) -->
+            <div class="max-w-md mx-auto nexus-border p-4 mt-8">
                 <div class="text-[10px] text-gray-500 mb-4 uppercase tracking-widest flex justify-between">
                     <span>Gift Codes ({{ myInvites.length }})</span>
                     <span class="text-gray-700">Invite Friends</span>
@@ -151,7 +161,6 @@
                             role.value = profile?.role || 'guest';
 
                             if (role.value !== 'guest') {
-                                // 拉取所有APP
                                 const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
                                 apps.value = appsData || [];
                                 
@@ -189,7 +198,7 @@
 
                         const isVip = computed(() => role.value === 'architect' || role.value === 'member');
                         
-                        // 🌟 分类计算属性
+                        // 🌟 分类逻辑
                         const musicApps = computed(() => apps.value.filter(a => !a.category || a.category === 'music'));
                         const visualApps = computed(() => apps.value.filter(a => a.category === 'visual'));
 
