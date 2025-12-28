@@ -5,205 +5,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>神思庭 | Shensi-Nexus</title>
     
+    <!-- 核心库 -->
     <script src="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <!-- 引入图标库 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
-        body { background-color: #050505; color: #e5e5e5; font-family: 'Courier New', monospace; overflow-x: hidden; }
-        .nexus-border { border: 1px solid #333; background: rgba(10,10,10,0.95); box-shadow: 0 0 20px rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-        .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 12px; width: 100%; margin-top: 10px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 2px; }
-        .input-dark { background: #000; border: 1px solid #444; color: #d4af37; width: 100%; padding: 12px; text-align: center; outline: none; }
+        /* 全局基础 */
+        body { background-color: #000; color: #e5e5e5; font-family: 'Courier New', monospace; overflow-x: hidden; }
         
-        /* === 魔法轮核心样式 === */
-        .magic-wheel-container { position: relative; width: 280px; height: 280px; margin: 40px auto; perspective: 1000px; }
+        /* 核心容器 */
+        .nexus-container { width: 100%; max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+
+        /* 边框风格 */
+        .nexus-border { 
+            border: 1px solid #333; 
+            background: rgba(15,15,15,0.95); 
+            box-shadow: 0 0 30px rgba(0,0,0,0.8); 
+            backdrop-filter: blur(10px); 
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        /* 交互组件 */
+        .btn-main { 
+            background: #d4af37; color: #000; font-weight: 800; 
+            padding: 15px; width: 100%; cursor: pointer; 
+            text-transform: uppercase; letter-spacing: 2px; border: none;
+            transition: 0.3s;
+        }
+        .btn-main:hover { background: #fff; box-shadow: 0 0 20px #d4af37; }
+        
+        .input-dark { 
+            background: #0a0a0a; border: 1px solid #444; color: #d4af37; 
+            width: 100%; padding: 15px; text-align: center; outline: none; 
+            font-size: 14px; margin-bottom: 10px;
+        }
+        .input-dark:focus { border-color: #d4af37; }
+
+        /* === 魔法轮 (强制居中修正) === */
+        .wheel-wrapper {
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; margin: 30px 0;
+        }
+        .magic-wheel-container { 
+            position: relative; width: 260px; height: 260px; 
+        }
         .magic-wheel {
             width: 100%; height: 100%; border-radius: 50%;
-            border: 2px solid #333; position: relative;
-            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); /* 弹性转动 */
+            border: 2px solid #222; position: relative;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
             background: radial-gradient(circle, #111 0%, #000 70%);
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            box-shadow: 0 0 40px rgba(0,0,0,0.9);
         }
-        /* 中心装饰 */
+        /* 中心 */
         .wheel-center {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 80px; height: 80px; border-radius: 50%;
-            background: #000; border: 1px solid #444;
+            background: #000; border: 1px solid #333;
             display: flex; align-items: center; justify-content: center;
-            z-index: 10; font-size: 24px; color: #fff;
-            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+            z-index: 10; font-size: 24px; color: #fff; text-shadow: 0 0 10px #fff;
         }
-        /* 扇形按钮 */
+        /* 扇形按钮位置 */
         .wheel-item {
             position: absolute; top: 50%; left: 50%;
-            width: 60px; height: 60px; margin-left: -30px; margin-top: -30px;
+            width: 50px; height: 50px; margin-left: -25px; margin-top: -25px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: 0.3s;
-            border-radius: 50%; background: #1a1a1a; border: 1px solid #333;
+            border-radius: 50%; background: #0a0a0a; border: 1px solid #333;
+            color: #555;
         }
-        /* 布局位置 (0, 90, 180, 270度) */
-        .pos-0 { transform: rotate(0deg) translate(100px) rotate(0deg); }     /* 右 */
-        .pos-1 { transform: rotate(90deg) translate(100px) rotate(-90deg); }  /* 下 */
-        .pos-2 { transform: rotate(180deg) translate(100px) rotate(-180deg); }/* 左 */
-        .pos-3 { transform: rotate(270deg) translate(100px) rotate(-270deg); }/* 上 */
+        .pos-0 { transform: rotate(0deg) translate(90px) rotate(0deg); }
+        .pos-1 { transform: rotate(90deg) translate(90px) rotate(-90deg); }
+        .pos-2 { transform: rotate(180deg) translate(90px) rotate(-180deg); }
+        .pos-3 { transform: rotate(270deg) translate(90px) rotate(-270deg); }
 
-        /* 激活状态辉光 */
-        .active-music { box-shadow: 0 0 20px #10b981; border-color: #10b981; color: #10b981; background: #000; }
-        .active-cinema { box-shadow: 0 0 20px #f59e0b; border-color: #f59e0b; color: #f59e0b; background: #000; }
-        .active-literature { box-shadow: 0 0 20px #8b5cf6; border-color: #8b5cf6; color: #8b5cf6; background: #000; }
-        .active-locked { box-shadow: 0 0 10px #555; border-color: #555; color: #555; }
+        /* 激活状态 */
+        .active-music { box-shadow: 0 0 25px #10b981; border-color: #10b981; color: #10b981; background: #000; transform: scale(1.2); }
+        .active-cinema { box-shadow: 0 0 25px #f59e0b; border-color: #f59e0b; color: #f59e0b; background: #000; transform: scale(1.2); }
+        .active-lit { box-shadow: 0 0 25px #8b5cf6; border-color: #8b5cf6; color: #8b5cf6; background: #000; transform: scale(1.2); }
+        .active-lock { box-shadow: 0 0 15px #555; border-color: #555; color: #eee; background: #222; }
 
-        /* 列表切换动画 */
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        /* APP 列表项 */
+        .app-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px; margin-bottom: 10px;
+            border-left: 4px solid transparent;
+            transition: 0.2s;
+        }
+        .app-btn {
+            padding: 5px 15px; border: 1px solid #444; 
+            font-size: 10px; font-weight: bold; background: #000;
+            white-space: nowrap; /* 防止按钮换行消失 */
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body class="min-h-screen flex flex-col justify-center py-10">
 
-    <div id="app" style="width: 100%; max-width: 600px; display: none;">
+    <div id="app" class="nexus-container" style="display: none;">
         
         <!-- 头部 -->
-        <div class="text-center mb-6">
+        <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-white mb-2 uppercase tracking-[0.2em]">Shensi-ST</h1>
-            <p class="text-[10px] text-gray-500 tracking-[0.6em] uppercase">Digital Sovereignty Nexus</p>
+            <div class="h-px w-20 bg-yellow-800 mx-auto mb-3"></div>
+            <p class="text-[10px] text-gray-500 tracking-[0.5em] uppercase">Digital Sovereignty Nexus</p>
         </div>
 
-        <!-- 登录界面 -->
-        <div v-if="!user" class="nexus-border p-8 border-t-2 border-gray-800 mb-8">
-            <p class="text-[10px] text-center text-gray-500 mb-8 tracking-[0.3em] uppercase">[ Identity Verification ]</p>
-            <input v-model="email" type="email" placeholder="ACCESS EMAIL" class="input-dark mb-6 text-xs tracking-widest">
-            <button @click="handleLogin" :disabled="loading" class="btn-main text-xs">
-                {{ loading ? 'LINKING...' : 'INITIALIZE SYSTEM' }}
-            </button>
-        </div>
-
-        <!-- 主控制台 -->
-        <div v-else>
+        <!-- 1. 登录界面 (强化版) -->
+        <div v-if="!user" class="nexus-border p-10 w-full animate-pulse">
+            <div class="text-center mb-8">
+                <i class="fas fa-fingerprint text-4xl text-gray-600 mb-4"></i>
+                <p class="text-xs text-gray-400 tracking-widest uppercase">Identity Verification Required</p>
+            </div>
             
-            <!-- 身份栏 (精简版) -->
-            <div class="flex justify-between items-center text-xs text-gray-500 mb-2 px-2">
-                <div>OPERATOR: <span class="text-white">{{ user.email.split('@')[0] }}</span></div>
-                <div class="border px-2 py-0.5 border-gray-700" :class="{'text-yellow-500 border-yellow-600': isVip}">
+            <input v-model="email" type="email" placeholder="ENTER ACCESS EMAIL" class="input-dark">
+            <button @click="handleLogin" :disabled="loading" class="btn-main">
+                {{ loading ? 'CONNECTING...' : 'INITIALIZE SYSTEM' }}
+            </button>
+            <p class="text-[10px] text-center text-gray-700 mt-4">SECURE LINK v2.0</p>
+        </div>
+
+        <!-- 2. 主控制台 -->
+        <div v-else class="w-full">
+            
+            <!-- 身份条 -->
+            <div class="flex justify-between items-center text-[10px] text-gray-500 mb-4 px-2 border-b border-gray-900 pb-2">
+                <div>OP: <span class="text-white font-mono">{{ user.email.split('@')[0] }}</span></div>
+                <div class="border px-2 py-0.5 border-gray-800" :class="isVip ? 'text-yellow-500' : 'text-gray-500'">
                     {{ isVip ? 'ARCHITECT' : 'MEMBER' }}
                 </div>
             </div>
 
-            <!-- 🎡 魔法轮 (Magic Wheel) -->
-            <div class="magic-wheel-container">
-                <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
-                    
-                    <!-- 0: Music (Green) -->
-                    <div class="wheel-item pos-0" :class="{'active-music': activeTab === 'music'}" @click="switchTab('music', 0)">
-                        <i class="fas fa-music text-xl"></i>
-                    </div>
-                    
-                    <!-- 1: Cinema (Gold) -->
-                    <div class="wheel-item pos-1" :class="{'active-cinema': activeTab === 'visual'}" @click="switchTab('visual', 1)">
-                        <i class="fas fa-film text-xl"></i>
-                    </div>
-                    
-                    <!-- 2: Literature (Purple) -->
-                    <div class="wheel-item pos-2" :class="{'active-literature': activeTab === 'literature'}" @click="switchTab('literature', 2)">
-                        <i class="fas fa-book text-xl"></i>
-                    </div>
-                    
-                    <!-- 3: Locked (Gray) -->
-                    <div class="wheel-item pos-3" :class="{'active-locked': activeTab === 'locked'}" @click="switchTab('locked', 3)">
-                        <i class="fas fa-lock text-xl"></i>
-                    </div>
+            <!-- 🎡 魔法轮 (Magic Wheel) - 居中容器 -->
+            <div class="wheel-wrapper">
+                <div class="magic-wheel-container">
+                    <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
+                        
+                        <!-- 0: Music (Green) -->
+                        <div class="wheel-item pos-0" :class="{'active-music': activeTab === 'music'}" @click="switchTab('music', 0)">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        
+                        <!-- 1: Cinema (Gold) -->
+                        <div class="wheel-item pos-1" :class="{'active-cinema': activeTab === 'visual'}" @click="switchTab('visual', 1)">
+                            <i class="fas fa-film"></i>
+                        </div>
+                        
+                        <!-- 2: Literature (Purple) -->
+                        <div class="wheel-item pos-2" :class="{'active-lit': activeTab === 'literature'}" @click="switchTab('literature', 2)">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        
+                        <!-- 3: Locked (Gray) -->
+                        <div class="wheel-item pos-3" :class="{'active-lock': activeTab === 'locked'}" @click="switchTab('locked', 3)">
+                            <i class="fas fa-lock"></i>
+                        </div>
 
-                </div>
-                <!-- 中心Logo -->
-                <div class="wheel-center">
-                    <span class="text-2xl font-bold">ST</span>
+                    </div>
+                    <!-- 中心 -->
+                    <div class="wheel-center">ST</div>
                 </div>
             </div>
 
             <!-- 📂 动态资产列表 -->
-            <transition name="fade" mode="out-in">
+            <div class="min-h-[300px] w-full">
                 
-                <!-- 列表容器 -->
-                <div :key="activeTab" class="min-h-[300px]">
-                    
-                    <!-- 标题 -->
-                    <div class="text-center mb-6">
-                        <h2 class="text-xl font-bold tracking-[0.3em] uppercase" :class="titleColor">
-                            {{ activeTitle }}
-                        </h2>
-                        <div class="h-px w-20 mx-auto mt-2 opacity-50" :class="bgTitleColor"></div>
-                    </div>
-
-                    <!-- 1. Music List -->
-                    <div v-if="activeTab === 'music'">
-                        <div v-for="app in musicApps" :key="app.slug" @click="openApp(app)"
-                             class="nexus-border p-4 mb-3 cursor-pointer hover:bg-gray-900 transition group flex justify-between items-center border-l-2 border-transparent hover:border-green-500">
-                            <div>
-                                <div class="text-xs font-bold text-gray-300 uppercase tracking-widest">{{ app.name }}</div>
-                                <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                            </div>
-                            <div class="text-[10px] text-green-700 group-hover:text-green-500">[ OPEN ]</div>
-                        </div>
-                    </div>
-
-                    <!-- 2. Cinema List -->
-                    <div v-if="activeTab === 'visual'">
-                        <div v-for="app in visualApps" :key="app.slug" @click="openApp(app)"
-                             class="nexus-border p-4 mb-3 cursor-pointer hover:bg-gray-900 transition group flex justify-between items-center border-l-2 border-transparent hover:border-yellow-500">
-                            <div>
-                                <div class="text-xs font-bold text-gray-300 uppercase tracking-widest">{{ app.name }}</div>
-                                <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                            </div>
-                            <div class="text-[10px] text-yellow-700 group-hover:text-yellow-500">[ RUN ]</div>
-                        </div>
-                    </div>
-
-                    <!-- 3. Literature List (New!) -->
-                    <div v-if="activeTab === 'literature'">
-                        <div v-for="app in litApps" :key="app.slug" @click="openApp(app)"
-                             class="nexus-border p-4 mb-3 cursor-pointer hover:bg-gray-900 transition group flex justify-between items-center border-l-2 border-transparent hover:border-purple-500">
-                            <div>
-                                <div class="text-xs font-bold text-gray-300 uppercase tracking-widest">{{ app.name }}</div>
-                                <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                            </div>
-                            <div class="text-[10px] text-purple-700 group-hover:text-purple-500">[ READ ]</div>
-                        </div>
-                        <div v-if="litApps.length === 0" class="text-center text-[10px] text-gray-600 py-10">
-                            ARCHIVE EMPTY. AWAITING DATA.
-                        </div>
-                    </div>
-
-                    <!-- 4. Locked -->
-                    <div v-if="activeTab === 'locked'" class="text-center py-10 opacity-50">
-                        <i class="fas fa-cube text-4xl mb-4 text-gray-700"></i>
-                        <p class="text-xs text-gray-600 tracking-widest">FOURTH DIMENSION</p>
-                        <p class="text-[10px] text-gray-800 mt-2">COMING SOON</p>
-                    </div>
-
+                <!-- 标题 -->
+                <div class="text-center mb-6">
+                    <h2 class="text-lg font-bold tracking-[0.3em] uppercase" :class="titleColor">
+                        {{ activeTitle }}
+                    </h2>
                 </div>
-            </transition>
 
-            <!-- 底部功能区 -->
-            <div class="mt-10 border-t border-gray-900 pt-4 flex justify-between items-center">
-                <div class="text-[10px] text-gray-600 cursor-pointer hover:text-white" @click="showInvites = !showInvites">
+                <!-- 列表渲染 -->
+                <div v-if="activeTab !== 'locked'">
+                    <div v-for="app in currentList" :key="app.slug" @click="openApp(app)"
+                         class="nexus-border app-item cursor-pointer hover:bg-gray-900 group"
+                         :style="{ borderLeftColor: activeColor }">
+                        
+                        <div class="flex-1 pr-4">
+                            <div class="text-xs font-bold text-gray-300 group-hover:text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
+                            <div class="text-[10px] text-gray-600 font-mono">{{ app.description }}</div>
+                        </div>
+                        
+                        <!-- 实体按钮，防止消失 -->
+                        <div class="app-btn group-hover:bg-white group-hover:text-black" 
+                             :style="{ color: activeColor, borderColor: activeColor }">
+                            OPEN >
+                        </div>
+                    </div>
+                    
+                    <div v-if="currentList.length === 0" class="text-center text-[10px] text-gray-700 py-10 border border-dashed border-gray-900">
+                        [ NO MODULES ACTIVE ]
+                    </div>
+                </div>
+
+                <!-- 锁定界面 -->
+                <div v-if="activeTab === 'locked'" class="text-center py-10 opacity-30">
+                    <i class="fas fa-cube text-4xl mb-4 text-gray-500"></i>
+                    <p class="text-xs text-gray-500 tracking-widest">FOURTH DIMENSION</p>
+                    <p class="text-[10px] mt-2">UNDER CONSTRUCTION</p>
+                </div>
+
+            </div>
+
+            <!-- 底部功能 -->
+            <div class="mt-8 border-t border-gray-900 pt-4 flex justify-between items-center px-2">
+                <div class="text-[10px] text-gray-500 cursor-pointer hover:text-white" @click="showInvites = !showInvites">
                     GIFT CODES ({{ myInvites.length }})
                 </div>
                 <div class="text-[10px] text-red-900 cursor-pointer hover:text-red-500" @click="signOut">
-                    TERMINATE
+                    [ LOGOUT ]
                 </div>
             </div>
 
-            <!-- 邀请码折叠面板 -->
+            <!-- 邀请码面板 -->
             <div v-if="showInvites" class="mt-4 nexus-border p-4">
                 <div v-for="inv in myInvites" :key="inv.id" class="flex justify-between items-center mb-2 text-[10px] border-b border-gray-800 pb-1">
                     <span :class="inv.is_used ? 'text-gray-700 line-through' : 'text-yellow-600 font-bold'">{{ inv.code }}</span>
                     <span v-if="!inv.is_used" class="text-gray-500 cursor-pointer hover:text-white" @click="copyCode(inv.code)">COPY</span>
                     <span v-else class="text-gray-800">USED</span>
                 </div>
-                <div class="mt-4">
-                    <input v-model="inviteCode" placeholder="ACTIVATE CODE" class="bg-black border border-gray-800 text-[10px] p-2 w-full text-center text-gray-500">
-                    <button @click="redeem" class="w-full bg-gray-900 text-gray-500 text-[10px] py-2 mt-1 hover:bg-gray-800">EXECUTE</button>
+                <!-- 激活入口 -->
+                <div class="mt-4 flex gap-2">
+                    <input v-model="inviteCode" placeholder="ACTIVATE CODE" class="bg-black border border-gray-800 text-[10px] p-2 flex-1 text-center text-gray-500 outline-none focus:border-yellow-600">
+                    <button @click="redeem" class="bg-gray-900 text-gray-500 text-[10px] px-4 hover:bg-gray-800 hover:text-white">EXEC</button>
                 </div>
             </div>
 
@@ -229,12 +256,12 @@
                         const apps = ref([]);
                         const myInvites = ref([]);
                         const inviteCode = ref('');
-                        const role = ref('guest');
                         const showInvites = ref(false);
+                        const role = ref('guest');
                         
-                        // 魔法轮状态
-                        const activeTab = ref('music'); // music, visual, literature, locked
-                        const wheelRotation = ref(0);   // 旋转角度
+                        // 罗盘状态
+                        const activeTab = ref('music'); 
+                        const wheelRotation = ref(0);
 
                         const initSystem = async () => {
                             const { data: profile } = await sbClient.from('profiles').select('role').eq('id', user.value.id).single();
@@ -261,30 +288,27 @@
                             document.getElementById('app').style.display = 'block';
                         });
 
-                        // 🎡 魔法轮控制逻辑
+                        // 🎡 旋转逻辑
                         const switchTab = (tab, index) => {
                             activeTab.value = tab;
-                            // 旋转逻辑：目标是让选中的点转到最上方(270度位置)
-                            // 0号(右)需转-90度, 1号(下)需转-180度... 
-                            // 这里简化：每次点击转到特定绝对角度
-                            // index: 0(music), 1(visual), 2(lit), 3(lock)
-                            // 对应初始位置：0deg, 90deg, 180deg, 270deg
-                            // 目标：让它转到顶端(-90度视觉位置)
-                            // 计算：target = -90 - (index * 90)
                             wheelRotation.value = -90 - (index * 90);
                         };
 
                         // 计算属性
                         const isVip = computed(() => role.value === 'architect' || role.value === 'member');
-                        const musicApps = computed(() => apps.value.filter(a => !a.category || a.category === 'music'));
-                        const visualApps = computed(() => apps.value.filter(a => a.category === 'visual'));
-                        const litApps = computed(() => apps.value.filter(a => a.category === 'literature'));
+                        
+                        const currentList = computed(() => {
+                            if(activeTab.value === 'music') return apps.value.filter(a => !a.category || a.category === 'music');
+                            if(activeTab.value === 'visual') return apps.value.filter(a => a.category === 'visual');
+                            if(activeTab.value === 'literature') return apps.value.filter(a => a.category === 'literature');
+                            return [];
+                        });
 
                         const activeTitle = computed(() => {
                             if(activeTab.value === 'music') return 'MUSIC MATRIX';
                             if(activeTab.value === 'visual') return 'CINEMA MATRIX';
                             if(activeTab.value === 'literature') return 'LITERATURE MATRIX';
-                            return 'UNKNOWN DIMENSION';
+                            return 'LOCKED SECTOR';
                         });
 
                         const titleColor = computed(() => {
@@ -293,26 +317,51 @@
                             if(activeTab.value === 'literature') return 'text-purple-500';
                             return 'text-gray-500';
                         });
-                        
-                        const bgTitleColor = computed(() => {
-                            if(activeTab.value === 'music') return 'bg-green-500';
-                            if(activeTab.value === 'visual') return 'bg-yellow-500';
-                            if(activeTab.value === 'literature') return 'bg-purple-500';
-                            return 'bg-gray-500';
+
+                        const activeColor = computed(() => {
+                            if(activeTab.value === 'music') return '#10b981';
+                            if(activeTab.value === 'visual') return '#f59e0b';
+                            if(activeTab.value === 'literature') return '#8b5cf6';
+                            return '#555';
                         });
 
-                        const handleLogin = async () => { /* ...省略重复代码... */ };
-                        const redeem = async () => { /* ...省略重复代码... */ };
+                        const handleLogin = async () => {
+                            if (!email.value) return alert('EMAIL REQUIRED');
+                            loading.value = true;
+                            const { error } = await sbClient.auth.signInWithOtp({ email: email.value });
+                            if (error) alert(error.message);
+                            else alert('CHECK INBOX: ' + email.value);
+                            loading.value = false;
+                        };
+
+                        const redeem = async () => {
+                            if (!inviteCode.value) return;
+                            const { data: codeData } = await sbClient.from('invite_codes').select('*').eq('code', inviteCode.value).eq('is_used', false).single();
+                            if (!codeData) return alert('INVALID CODE');
+
+                            let newRole = 'member';
+                            if (codeData.type === 'ALL') newRole = 'architect';
+
+                            let expireDate = new Date();
+                            expireDate.setDate(expireDate.getDate() + codeData.days);
+                            const perms = { 'ALL': expireDate.toISOString() };
+
+                            await sbClient.from('profiles').update({ permissions: perms, role: newRole }).eq('id', user.value.id);
+                            await sbClient.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
+
+                            alert('ACCESS GRANTED');
+                            inviteCode.value = '';
+                            initSystem();
+                        };
+
                         const copyCode = (c) => navigator.clipboard.writeText(c);
                         const openApp = (app) => window.open(app.url, '_blank');
                         const signOut = () => sbClient.auth.signOut();
 
                         return { 
-                            user, email, loading, 
-                            activeTab, wheelRotation, switchTab, activeTitle, titleColor, bgTitleColor,
-                            musicApps, visualApps, litApps,
-                            myInvites, inviteCode, showInvites,
-                            handleLogin, signOut, isVip, redeem, copyCode, openApp 
+                            user, email, loading, myInvites, inviteCode, showInvites,
+                            handleLogin, signOut, isVip, redeem, copyCode, openApp,
+                            activeTab, wheelRotation, switchTab, currentList, activeTitle, titleColor, activeColor
                         };
                     }
                 }).mount('#app');
