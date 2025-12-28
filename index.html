@@ -13,16 +13,14 @@
 
     <style>
         body { background-color: #050505; color: #e5e5e5; font-family: 'Courier New', monospace; }
-        .nexus-border { border: 1px solid #333; background: rgba(20,20,20,0.9); box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .nexus-border { border: 1px solid #333; background: rgba(20,20,20,0.95); box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 12px; width: 100%; margin-top: 10px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 2px; }
         .btn-main:hover { background: #fff; box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
         .input-dark { background: #000; border: 1px solid #444; color: #d4af37; width: 100%; padding: 12px; text-align: center; outline: none; transition: 0.3s; }
         .status-dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
-        .count-glow { text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
         
-        /* 只有 VIP 才能看见的金色边框 */
-        .border-vip { border-color: #d4af37; }
-        .border-normal { border-color: #333; }
+        /* 激活层样式 */
+        .activation-layer { text-align: center; padding: 20px; border: 1px dashed #d4af37; margin-top: 20px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 bg-black">
@@ -36,7 +34,7 @@
             <p class="text-[10px] text-gray-500 tracking-[0.6em] uppercase">Digital Sovereignty Nexus</p>
         </div>
 
-        <!-- 登录界面 -->
+        <!-- 1. 未登录：显示登录框 -->
         <div v-if="!user" class="nexus-border p-8 border-t-2 border-gray-800">
             <p class="text-[10px] text-center text-gray-500 mb-8 tracking-[0.3em] uppercase">[ Identity Verification ]</p>
             <input v-model="email" type="email" placeholder="ACCESS EMAIL" class="input-dark mb-6 text-xs tracking-widest">
@@ -45,47 +43,47 @@
             </button>
         </div>
 
-        <!-- 控制台界面 -->
+        <!-- 2. 已登录：控制台 -->
         <div v-else class="space-y-6">
             
             <!-- 身份卡片 -->
-            <div class="nexus-border p-6 border-t-2 relative" :class="isVip ? 'border-vip' : 'border-normal'">
-                <!-- 左上角标签 -->
+            <div class="nexus-border p-6 border-t-2 relative" :class="isArchitect ? 'border-yellow-600' : 'border-gray-700'">
                 <div class="flex justify-between text-[10px] text-gray-500 mb-5 uppercase tracking-widest">
                     <span>Current Entity</span>
-                    <span class="border px-2 py-0.5" :class="isVip ? 'text-yellow-500 border-yellow-600' : 'text-gray-400 border-gray-600'">
-                        {{ isVip ? 'ARCHITECT' : 'MEMBER' }}
+                    <span class="border px-2 py-0.5" :class="isArchitect ? 'text-yellow-500 border-yellow-600' : 'text-gray-400 border-gray-600'">
+                        {{ roleLabel }}
                     </span>
                 </div>
                 
-                <!-- 邮箱显示 -->
                 <div class="text-gray-200 font-bold text-sm tracking-wider mb-2 font-mono">{{ user.email }}</div>
                 
                 <!-- 状态显示 -->
-                <div v-if="isVip" class="text-[10px] text-yellow-500 flex items-center pt-3 border-t border-gray-800/50">
-                    <span class="status-dot bg-yellow-500 animate-pulse"></span> SYSTEM CONTROL: FULL
+                <div v-if="isActive" class="text-[10px] text-green-500 flex items-center pt-3 border-t border-gray-800/50">
+                    <span class="status-dot bg-green-500"></span> ACCESS AUTHORIZED
                 </div>
-                <div v-else class="text-[10px] text-blue-500 flex items-center pt-3 border-t border-gray-800/50">
-                    <span class="status-dot bg-blue-500"></span> ACCESS: AUTHORIZED
-                </div>
-
-                <!-- ⚠️ 商业机密：只有 VIP (Architect) 才能看见总人数 -->
-                <div v-if="isVip && userCount > 0" class="absolute top-6 right-6 text-right">
-                    <div class="text-[10px] text-gray-600 uppercase tracking-widest">Linked Entities</div>
-                    <div class="text-xl text-yellow-600 font-bold count-glow">{{ userCount }}</div>
+                <div v-else class="text-[10px] text-red-500 flex items-center pt-3 border-t border-gray-800/50">
+                    <span class="status-dot bg-red-500 animate-pulse"></span> ACCOUNT INACTIVE
                 </div>
 
-                <button @click="signOut" class="text-[10px] text-red-900 hover:text-red-500 mt-4 w-full text-right tracking-[0.2em] uppercase transition-colors">Terminate Session</button>
+                <!-- 架构师可见人数 -->
+                <div v-if="isArchitect && userCount > 0" class="absolute top-6 right-6 text-right">
+                    <div class="text-[10px] text-gray-600 uppercase tracking-widest">Linked</div>
+                    <div class="text-xl text-yellow-600 font-bold">{{ userCount }}</div>
+                </div>
+
+                <button @click="signOut" class="text-[10px] text-red-900 hover:text-red-500 mt-4 w-full text-right tracking-[0.2em] uppercase transition-colors">Terminate</button>
             </div>
 
-            <!-- 邀请码输入 (仅供升级 Architect 用) -->
-            <div class="nexus-border p-4 flex gap-3">
-                <input v-model="inviteCode" placeholder="PROTOCOL CODE" class="input-dark text-xs uppercase tracking-widest">
-                <button @click="redeem" class="bg-gray-900 text-gray-400 border border-gray-800 px-5 font-bold text-xs hover:text-yellow-500 hover:border-yellow-600 transition-colors">EXEC</button>
+            <!-- ⚠️ 激活拦截区：如果是 Guest，只显示这个 -->
+            <div v-if="!isActive" class="nexus-border p-6 activation-layer">
+                <h3 class="text-yellow-500 text-sm mb-4 uppercase tracking-widest">Invitation Required</h3>
+                <p class="text-[10px] text-gray-500 mb-4">请输入邀请码以激活会员权限</p>
+                <input v-model="inviteCode" placeholder="ENTER CODE" class="input-dark text-xs uppercase tracking-widest mb-4">
+                <button @click="redeem" class="btn-main text-xs">ACTIVATE ACCOUNT</button>
             </div>
 
-            <!-- 资产列表 -->
-            <div class="mt-10">
+            <!-- ✅ 资产列表：只有激活后 (isActive) 才显示 -->
+            <div v-if="isActive" class="mt-10">
                 <p class="text-[10px] text-center text-gray-800 mb-5 tracking-[0.4em] uppercase border-b border-gray-900 pb-2">- Neural Links -</p>
                 
                 <div v-for="app in apps" :key="app.slug" class="nexus-border p-4 mb-3 flex justify-between items-center cursor-pointer hover:bg-gray-900 transition group" @click="openApp(app)">
@@ -93,20 +91,24 @@
                         <div class="text-xs font-bold text-gray-400 group-hover:text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
                         <div class="text-[10px] text-gray-700 font-mono">{{ app.description }}</div>
                     </div>
-                    <!-- 只要进来了，所有人都是 OPEN -->
                     <div class="text-[10px] text-green-700 group-hover:text-green-500">
                         [ OPEN > ]
                     </div>
                 </div>
+
+                <!-- 架构师专用升级通道 (平时隐藏) -->
+                <div v-if="!isArchitect" class="mt-8 text-center">
+                   <input v-model="inviteCode" placeholder="ARCHITECT CODE" class="bg-black border border-gray-900 text-[10px] text-gray-600 text-center p-2 w-1/2 focus:outline-none focus:border-yellow-900">
+                   <button @click="redeem" class="text-[10px] text-gray-600 ml-2 hover:text-yellow-600">UPGRADE</button>
+                </div>
             </div>
+
         </div>
     </div>
 
     <script>
-        // ================= 配置区 =================
         const SUPABASE_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
-        // =========================================
 
         window.onload = function() {
             try {
@@ -122,25 +124,24 @@
                         const loading = ref(false);
                         const apps = ref([]);
                         const inviteCode = ref('');
-                        const permissions = ref({});
+                        const role = ref('guest'); // 默认为 guest
                         const userCount = ref(0);
 
                         const initSystem = async () => {
-                            // 1. 加载应用
-                            const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
-                            apps.value = appsData || [];
-                            
-                            // 2. 加载权限
-                            const { data: profile } = await sbClient.from('profiles').select('permissions').eq('id', user.value.id).single();
-                            permissions.value = profile?.permissions || {};
+                            // 1. 获取用户角色
+                            const { data: profile } = await sbClient.from('profiles').select('role').eq('id', user.value.id).single();
+                            role.value = profile?.role || 'guest';
 
-                            // 3. 计算身份
-                            const isVipUser = permissions.value['ALL'] && new Date(permissions.value['ALL']) > new Date();
-
-                            // 4. 如果是 VIP，才去统计人数
-                            if (isVipUser) {
-                                const { count } = await sbClient.from('profiles').select('*', { count: 'exact', head: true });
-                                userCount.value = count || 0;
+                            // 2. 只有激活用户才能拉取应用列表
+                            if (role.value !== 'guest') {
+                                const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
+                                apps.value = appsData || [];
+                                
+                                // 架构师看人数
+                                if (role.value === 'architect') {
+                                    const { count } = await sbClient.from('profiles').select('*', { count: 'exact', head: true });
+                                    userCount.value = count || 0;
+                                }
                             }
                         };
 
@@ -150,12 +151,10 @@
                                 user.value = session.user;
                                 await initSystem();
                             }
-
                             sbClient.auth.onAuthStateChange((_e, session) => {
                                 user.value = session?.user || null;
                                 if(user.value) initSystem();
                             });
-                            
                             document.getElementById('app').style.display = 'block';
                         });
 
@@ -168,45 +167,50 @@
                             loading.value = false;
                         };
 
-                        const isVip = computed(() => {
-                            const date = permissions.value['ALL'];
-                            return date && new Date(date) > new Date();
+                        // 计算属性
+                        const isArchitect = computed(() => role.value === 'architect');
+                        const isActive = computed(() => role.value === 'member' || role.value === 'architect');
+                        const roleLabel = computed(() => {
+                            if (role.value === 'architect') return 'ARCHITECT';
+                            if (role.value === 'member') return 'MEMBER';
+                            return 'GUEST (INACTIVE)';
                         });
 
                         const redeem = async () => {
                             if (!inviteCode.value) return;
+                            
                             const { data: codeData } = await sbClient.from('invite_codes').select('*').eq('code', inviteCode.value).eq('is_used', false).single();
                             if (!codeData) return alert('INVALID CODE');
 
-                            let currentExp = permissions.value['ALL'] ? new Date(permissions.value['ALL']) : new Date();
-                            if (currentExp < new Date()) currentExp = new Date();
-                            currentExp.setDate(currentExp.getDate() + codeData.days);
+                            // 判断码的类型
+                            let newRole = 'member'; // 默认是会员码
+                            if (codeData.type === 'ALL') newRole = 'architect'; // 创世码
 
-                            const newPerms = { ...permissions.value, 'ALL': currentExp.toISOString() };
+                            // 赋予全站权限
+                            let expireDate = new Date();
+                            expireDate.setDate(expireDate.getDate() + codeData.days);
+                            const perms = { 'ALL': expireDate.toISOString() };
+
+                            await sbClient.from('profiles').update({ permissions: perms, role: newRole }).eq('id', user.value.id);
                             
-                            await sbClient.from('profiles').update({ permissions: newPerms, role: 'architect' }).eq('id', user.value.id);
+                            // 如果是单次码，标记为已用；如果是通用码(如 JOIN-SHENSI)，可以不标记is_used
+                            // 这里简化逻辑：所有码都设为已用。如果你想搞通用码，可以在数据库改一下。
                             await sbClient.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
 
-                            alert('ACCESS GRANTED');
+                            alert('ACTIVATION SUCCESSFUL');
                             inviteCode.value = '';
                             initSystem();
                         };
 
                         const openApp = (app) => {
-                            // 只要在列表里，就能点，因为已经登录了
-                            window.open(app.url, '_blank');
+                             window.open(app.url, '_blank');
                         };
-
                         const signOut = () => sbClient.auth.signOut();
 
-                        return { user, email, loading, apps, inviteCode, handleLogin, signOut, isVip, redeem, openApp, userCount };
+                        return { user, email, loading, apps, inviteCode, handleLogin, signOut, isArchitect, isActive, roleLabel, redeem, userCount };
                     }
                 }).mount('#app');
-
-            } catch (err) {
-                console.error(err);
-                document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:50px'>SYSTEM FAIL</h1>";
-            }
+            } catch (err) { console.error(err); }
         };
     </script>
 </body>
