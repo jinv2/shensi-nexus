@@ -80,13 +80,14 @@
         .pos-0 { transform: rotate(0deg) translate(90px) rotate(0deg); }     /* 右: 音乐 */
         .pos-1 { transform: rotate(90deg) translate(90px) rotate(-90deg); }  /* 下: 影视 */
         .pos-2 { transform: rotate(180deg) translate(90px) rotate(-180deg); }/* 左: 文学 */
-        .pos-3 { transform: rotate(270deg) translate(90px) rotate(-270deg); }/* 上: 锁定 */
+        .pos-3 { transform: rotate(270deg) translate(90px) rotate(-270deg); }/* 上: 智能体 (新) */
 
         /* 激活状态辉光 */
         .active-music { box-shadow: 0 0 25px #10b981; border-color: #10b981; color: #10b981; background: #000; transform: scale(1.2); }
         .active-cinema { box-shadow: 0 0 25px #f59e0b; border-color: #f59e0b; color: #f59e0b; background: #000; transform: scale(1.2); }
         .active-lit { box-shadow: 0 0 25px #8b5cf6; border-color: #8b5cf6; color: #8b5cf6; background: #000; transform: scale(1.2); }
-        .active-lock { box-shadow: 0 0 15px #555; border-color: #555; color: #eee; background: #222; }
+        /* 🔴 新增：智能体激活样式 (绯红) */
+        .active-agent { box-shadow: 0 0 25px #ef4444; border-color: #ef4444; color: #ef4444; background: #000; transform: scale(1.2); }
 
         /* APP 列表项 */
         .app-item {
@@ -126,7 +127,7 @@
             <button @click="handleLogin" :disabled="loading" class="btn-main">
                 {{ loading ? 'CONNECTING...' : 'INITIALIZE SYSTEM' }}
             </button>
-            <p class="text-[10px] text-center text-gray-700 mt-4">SECURE LINK v3.1</p>
+            <p class="text-[10px] text-center text-gray-700 mt-4">SECURE LINK v4.0</p>
         </div>
 
         <!-- 2. 主控制台 -->
@@ -160,9 +161,9 @@
                             <i class="fas fa-book"></i>
                         </div>
                         
-                        <!-- 3: Locked (Gray) -->
-                        <div class="wheel-item pos-3" :class="{'active-lock': activeTab === 'locked'}" @click="switchTab('locked', 3)">
-                            <i class="fas fa-lock"></i>
+                        <!-- 3: Agent (Red) - 新增 -->
+                        <div class="wheel-item pos-3" :class="{'active-agent': activeTab === 'agent'}" @click="switchTab('agent', 3)">
+                            <i class="fas fa-brain"></i>
                         </div>
 
                     </div>
@@ -182,7 +183,7 @@
                 </div>
 
                 <!-- 列表渲染 -->
-                <div v-if="activeTab !== 'locked'">
+                <div>
                     <div v-for="app in currentList" :key="app.slug" @click="openApp(app)"
                          class="nexus-border app-item cursor-pointer hover:bg-gray-900 group"
                          :style="{ borderLeftColor: activeColor }">
@@ -195,20 +196,13 @@
                         <!-- 实体按钮 -->
                         <div class="app-btn" 
                              :style="{ color: activeColor, borderColor: activeColor }">
-                            OPEN >
+                            {{ activeTab === 'agent' ? 'ACTIVATE' : 'OPEN >' }}
                         </div>
                     </div>
                     
                     <div v-if="currentList.length === 0" class="text-center text-[10px] text-gray-700 py-10 border border-dashed border-gray-900">
-                        [ NO MODULES ACTIVE ]
+                        [ NO MODULES DETECTED ]
                     </div>
-                </div>
-
-                <!-- 锁定界面 -->
-                <div v-if="activeTab === 'locked'" class="text-center py-10 opacity-30">
-                    <i class="fas fa-cube text-4xl mb-4 text-gray-500"></i>
-                    <p class="text-xs text-gray-500 tracking-widest">FOURTH DIMENSION</p>
-                    <p class="text-[10px] mt-2">UNDER CONSTRUCTION</p>
                 </div>
 
             </div>
@@ -262,7 +256,7 @@
                         const showInvites = ref(false);
                         const role = ref('guest');
                         
-                        // 罗盘状态：0=音乐, 1=影视, 2=文学, 3=锁定
+                        // 罗盘状态：0=音乐, 1=影视, 2=文学, 3=智能体
                         const activeTab = ref('music'); 
                         const wheelRotation = ref(0);
 
@@ -299,10 +293,13 @@
 
                         const isVip = computed(() => role.value === 'architect' || role.value === 'member');
                         
+                        // 🌟 列表过滤
                         const currentList = computed(() => {
                             if(activeTab.value === 'music') return apps.value.filter(a => !a.category || a.category === 'music');
                             if(activeTab.value === 'visual') return apps.value.filter(a => a.category === 'visual');
                             if(activeTab.value === 'literature') return apps.value.filter(a => a.category === 'literature');
+                            // 新增：智能体分类
+                            if(activeTab.value === 'agent') return apps.value.filter(a => a.category === 'agent');
                             return [];
                         });
 
@@ -310,6 +307,7 @@
                             if(activeTab.value === 'music') return 'MUSIC MATRIX';
                             if(activeTab.value === 'visual') return 'CINEMA MATRIX';
                             if(activeTab.value === 'literature') return 'LITERATURE MATRIX';
+                            if(activeTab.value === 'agent') return 'AGENT MATRIX'; // 新标题
                             return 'LOCKED SECTOR';
                         });
 
@@ -317,6 +315,7 @@
                             if(activeTab.value === 'music') return 'text-green-500';
                             if(activeTab.value === 'visual') return 'text-yellow-500';
                             if(activeTab.value === 'literature') return 'text-purple-500';
+                            if(activeTab.value === 'agent') return 'text-red-500'; // 新颜色
                             return 'text-gray-500';
                         });
 
@@ -324,6 +323,7 @@
                             if(activeTab.value === 'music') return '#10b981';
                             if(activeTab.value === 'visual') return '#f59e0b';
                             if(activeTab.value === 'literature') return '#8b5cf6';
+                            if(activeTab.value === 'agent') return '#ef4444'; // 新颜色
                             return '#555';
                         });
 
@@ -358,21 +358,14 @@
 
                         const copyCode = (c) => navigator.clipboard.writeText(c);
                         
-                        // 🟢 核心升级：带令牌跳转，免二次登录
+                        // Token Passing
                         const openApp = async (app) => {
-                            // 1. 获取当前会话
                             const { data: { session } } = await sbClient.auth.getSession();
-                            
                             if (session) {
-                                // 2. 构造带 Token 的网址
                                 const targetUrl = new URL(app.url);
-                                // 把 access_token 和 refresh_token 作为哈希参数传递
                                 targetUrl.hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
-                                
-                                // 3. 跳转
                                 window.open(targetUrl.toString(), '_blank');
                             } else {
-                                // 没登录就直接跳，反正那边有玻璃墙挡着
                                 window.open(app.url, '_blank');
                             }
                         };
