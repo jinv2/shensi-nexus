@@ -5,154 +5,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>神思庭 | Shensi-Nexus</title>
     
-    <!-- 正确加载 Tailwind CSS（关键修复） -->
+    <!-- 正确加载 Tailwind（修复黑屏核心） -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
-        body { background-color: #000; color: #e5e5e5; font-family: 'Courier New', monospace; overflow-x: hidden; }
-        #data-stream { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.3; pointer-events: none; }
-        .nexus-container { width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .nexus-border { border: 1px solid #333; background: rgba(10,10,10,0.9); padding: 20px; border-radius: 8px; box-shadow: 0 0 30px rgba(0,0,0,0.8); backdrop-filter: blur(8px); }
-        .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 15px; width: 100%; text-transform: uppercase; letter-spacing: 2px; border: none; cursor: pointer; transition: 0.3s; }
-        .btn-main:hover { background: #fff; box-shadow: 0 0 20px #d4af37; }
-        .input-dark { background: #0a0a0a; border: 1px solid #444; color: #d4af37; width: 100%; padding: 15px; text-align: center; margin-bottom: 10px; }
-        .wheel-item { width: 54px; height: 54px; border-radius: 50%; background: #0a0a0a; border: 1px solid #333; display: flex; align-items: center; justify-content: center; }
-        .active-auto { box-shadow: 0 0 25px #e5e7eb; border-color: #e5e7eb; color: #e5e7eb; }
-        .app-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-left: 4px solid #d1d5db; background: rgba(20,20,20,0.8); margin-bottom: 10px; border-radius: 4px; }
+        body { background:#000; color:#e5e5e5; font-family:'Courier New',monospace; }
+        #data-stream { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.3; pointer-events:none; }
+        .container { max-width:600px; margin:0 auto; padding:20px; }
+        .border-box { border:1px solid #333; background:rgba(10,10,10,0.9); padding:30px; border-radius:8px; backdrop-filter:blur(8px); }
+        .btn-gold { background:#d4af37; color:#000; font-weight:bold; padding:15px; width:100%; text-transform:uppercase; letter-spacing:2px; border:none; cursor:pointer; }
+        .btn-gold:hover { background:#fff; box-shadow:0 0 20px #d4af37; }
+        .input { background:#0a0a0a; border:1px solid #444; color:#d4af37; padding:15px; text-align:center; width:100%; margin-bottom:10px; }
+        .app-card { background:rgba(20,20,20,0.8); border-left:4px solid #d1d5db; padding:20px; margin:15px 0; border-radius:4px; display:flex; justify-content:space-between; align-items:center; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-center">
 
     <canvas id="data-stream"></canvas>
 
-    <div id="app" class="nexus-container">
-        <!-- 未解锁：登录 / 邀请码界面 -->
-        <div v-if="!isUnlocked" class="nexus-border text-center">
+    <div id="app" class="container">
+        <!-- 未解锁状态 -->
+        <div v-if="!unlocked" class="border-box text-center">
             <h1 class="text-4xl font-bold mb-8">Shensi-ST</h1>
-            <p class="text-xs text-gray-400 mb-8 uppercase tracking-widest">Digital Sovereignty Nexus</p>
+            <p class="text-xs uppercase tracking-widest text-gray-400 mb-10">Digital Sovereignty Nexus</p>
             
-            <!-- 邮箱登录（可选） -->
-            <input v-model="email" type="email" placeholder="ENTER ACCESS EMAIL (可选)" class="input-dark">
-            <button @click="handleLogin" :disabled="loading" class="btn-main mb-6">
-                {{ loading ? 'CONNECTING...' : 'INITIALIZE VIA EMAIL' }}
-            </button>
+            <p class="text-sm mb-6">输入白名单邀请码永久解锁</p>
+            <input v-model="code" placeholder="ENTER INVITE CODE" class="input">
+            <button @click="activate" class="btn-gold mb-4">EXEC</button>
             
-            <!-- 邀请码直接解锁 -->
-            <p class="text-xs text-gray-500 uppercase mb-4">OR USE GIFT CODE (推荐)</p>
-            <div class="flex gap-2 max-w-xs mx-auto">
-                <input v-model="inviteCode" placeholder="ENTER INVITE CODE" class="input-dark flex-1">
-                <button @click="redeem" class="btn-main px-8">EXEC</button>
-            </div>
-            <p v-if="errorMsg" class="text-red-500 text-xs mt-4">{{ errorMsg }}</p>
+            <p v-if="msg" :class="msg.includes('成功')?'text-green-400':'text-red-500'" class="text-xs mt-4">{{ msg }}</p>
+            
+            <button @click="reset" class="text-xs text-red-600 underline mt-8">强制重置（作者专用）</button>
         </div>
 
-        <!-- 已解锁：主控制台 -->
+        <!-- 已解锁：Automation Matrix -->
         <div v-else class="text-center">
             <h1 class="text-4xl font-bold mb-4">AUTOMATION MATRIX</h1>
-            <p class="text-xs text-gray-500 mb-8">NO-API RPA PROTOCOL ACTIVE</p>
+            <p class="text-xs text-gray-500 mb-10">NO-API RPA PROTOCOL ACTIVE</p>
 
-            <!-- 三个核心模块（硬编码，始终可用） -->
-            <div class="space-y-4 max-w-md mx-auto">
-                <div class="app-item" @click="alert('Ghost Operator 已部署（开发中）')">
+            <div class="space-y-6">
+                <div class="app-card">
                     <div>
-                        <div class="text-sm font-bold uppercase">Ghost Operator (AI 幽灵)</div>
+                        <div class="font-bold uppercase">Ghost Operator (AI 幽灵)</div>
                         <div class="text-xs text-gray-500">无 API 全界面操作 · 视觉大脑驱动的网页自动化</div>
                     </div>
-                    <div class="text-xs font-bold text-gray-300">DEPLOY</div>
+                    <div class="text-gray-300 font-bold">DEPLOY</div>
                 </div>
-                
-                <div class="app-item" @click="alert('Vibe Coding 已部署（开发中）')">
+
+                <div class="app-card">
                     <div>
-                        <div class="text-sm font-bold uppercase">Vibe Coding (代码补全)</div>
+                        <div class="font-bold uppercase">Vibe Coding (代码补全)</div>
                         <div class="text-xs text-gray-500">IDE 自然语言补丁生成器 · 自动部署触发器</div>
                     </div>
-                    <div class="text-xs font-bold text-gray-300">DEPLOY</div>
+                    <div class="text-gray-300 font-bold">DEPLOY</div>
                 </div>
-                
-                <div class="app-item" @click="showUltimate ? alert('运行终极协议') : ''">
+
+                <div class="app-card">
                     <div>
-                        <div class="text-sm font-bold uppercase">Monitor Eye (天眼监控)</div>
+                        <div class="font-bold uppercase">Monitor Eye (天眼监控)</div>
                         <div class="text-xs text-gray-500">基于截图分析的竞品逆向工程体</div>
                     </div>
-                    <div class="text-xs font-bold text-gray-300">DEPLOY</div>
+                    <div class="text-gray-300 font-bold">DEPLOY</div>
                 </div>
 
-                <!-- 最高级别密码保护 -->
-                <div v-if="!showUltimate" class="nexus-border mt-8 p-6">
-                    <p class="text-xs text-gray-500 uppercase mb-4">UNLOCK ULTIMATE PROTOCOL</p>
-                    <input v-model="secretPassword" type="password" placeholder="ENTER FINAL KEY" class="input-dark w-64">
-                    <button @click="checkUltimate" class="btn-main mt-4">ACTIVATE</button>
+                <!-- 最高级别保护 -->
+                <div v-if="!ultimate" class="border-box mt-10">
+                    <p class="text-xs uppercase text-gray-500 mb-4">UNLOCK ULTIMATE PROTOCOL</p>
+                    <input v-model="ultimateKey" type="password" placeholder="FINAL KEY" class="input w-72">
+                    <button @click="unlockUltimate" class="btn-gold mt-4">ACTIVATE</button>
                 </div>
-                <div v-else class="text-yellow-500 text-lg uppercase mt-8">FULL SYSTEM CONTROL ENABLED</div>
+                <div v-else class="text-yellow-500 text-2xl uppercase mt-10">FULL CONTROL ENABLED</div>
             </div>
 
-            <!-- 注销 -->
-            <button @click="forceLogout" class="mt-12 text-xs text-red-700 hover:text-red-500 underline">
-                [ FORCE LOGOUT / RESET ]
-            </button>
+            <button @click="reset" class="text-xs text-red-600 underline mt-12">[ FORCE LOGOUT ]</button>
         </div>
     </div>
 
     <script>
-        // 粒子背景（保留原效果）
-        const canvas = document.createElement('canvas');
-        canvas.id = 'data-stream';
-        document.body.prepend(canvas);
-        // ...（原粒子代码可保留，这里简化）
+        // 简单粒子背景
+        const canvas = document.getElementById('data-stream');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const particles = Array(50).fill().map(()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-0.5)*0.5,vy:(Math.random()-0.5)*0.5,size:Math.random()*2}));
+        function anim(){ ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>canvas.width)p.vx*=-1;if(p.y<0||p.y>canvas.height)p.vy*=-1;ctx.fillStyle='rgba(100,100,100,0.5)';ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();}); requestAnimationFrame(anim); }
+        anim();
 
         const { createApp, ref } = Vue;
-        const sbClient = supabase.createClient('https://enutekcevqcmhrzwdnlt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E');
-
         createApp({
             setup() {
-                const isUnlocked = ref(localStorage.getItem('shensi_unlocked') === 'true');
-                const showUltimate = ref(localStorage.getItem('shensi_ultimate') === 'true');
-                const email = ref('');
-                const inviteCode = ref('');
-                const secretPassword = ref('');
-                const loading = ref(false);
-                const errorMsg = ref('');
+                const unlocked = ref(localStorage.getItem('shensi_unlocked')==='true');
+                const ultimate = ref(localStorage.getItem('shensi_ultimate')==='true');
+                const code = ref('');
+                const ultimateKey = ref('');
+                const msg = ref('');
 
-                const handleLogin = async () => {
-                    // 邮箱登录可选（魔法链接）
-                    if (!email.value) return;
-                    loading.value = true;
-                    await sbClient.auth.signInWithOtp({ email: email.value });
-                    alert('魔法链接已发送！');
-                    loading.value = false;
-                };
+                // 作者白名单（直接改这里添加/删除邀请码）
+                const whitelist = ['SHENSI2025','GHOST2025','NEXUS2026','ETERNAL2026','VIBECODE','MONITOREYE','JINV2','AUTHOR'];
 
-                const redeem = () => {
-                    const validCodes = ['SHENSI2025', 'GHOST2025', 'NEXUS2026', 'AUTOAI', 'VIBECODE', 'MONITOREYE', 'ETERNAL2026']; // 添加您的邀请码
-                    if (validCodes.includes(inviteCode.value.trim().toUpperCase())) {
-                        isUnlocked.value = true;
-                        localStorage.setItem('shensi_unlocked', 'true');
-                        errorMsg.value = '';
-                        alert('永久解锁成功！');
+                const activate = () => {
+                    if (whitelist.includes(code.value.toUpperCase().trim())) {
+                        unlocked.value = true;
+                        localStorage.setItem('shensi_unlocked','true');
+                        msg.value = '解锁成功！系统已永久激活';
+                        code.value = '';
                     } else {
-                        errorMsg.value = '邀请码无效';
+                        msg.value = '邀请码无效';
                     }
                 };
 
-                const checkUltimate = () => {
-                    if (secretPassword.value === 'ETERNAL2026') { // 您的终极密码
-                        showUltimate.value = true;
-                        localStorage.setItem('shensi_ultimate', 'true');
+                const unlockUltimate = () => {
+                    if (ultimateKey.value === 'ETERNAL2026') { // 改成您的终极密码
+                        ultimate.value = true;
+                        localStorage.setItem('shensi_ultimate','true');
                     } else {
                         alert('ACCESS DENIED');
                     }
                 };
 
-                const forceLogout = () => {
+                const reset = () => {
                     localStorage.clear();
                     location.reload();
                 };
 
-                return { isUnlocked, showUltimate, email, inviteCode, secretPassword, loading, errorMsg, handleLogin, redeem, checkUltimate, forceLogout };
+                return { unlocked, ultimate, code, ultimateKey, msg, activate, unlockUltimate, reset };
             }
         }).mount('#app');
     </script>
