@@ -9,7 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background-color: #000; color: #e5e5e5; font-family: monospace; overflow-x: hidden; }
-        .nexus-container { width: 100%; max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+        .nexus-container { width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
         .nexus-border { border: 1px solid #333; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); width: 100%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         
         /* 魔法轮 */
@@ -28,39 +28,6 @@
         .active-item { color: white; border-color: white; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
         .app-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; margin-bottom: 10px; border-left: 3px solid transparent; transition: 0.2s; cursor: pointer; }
         .app-item:hover { background: #222; }
-        
-        /* 状态指示器 */
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-        .status-online { background: #10b981; box-shadow: 0 0 8px #10b981; }
-        .status-offline { background: #6b7280; }
-        .app-status {
-            font-size: 9px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-left: 8px;
-        }
-        .status-ready { background: #10b981; color: #000; }
-        .status-dev { background: #f59e0b; color: #000; }
-        .status-deployed { background: #3b82f6; color: white; }
-        .btn-open {
-            background: transparent;
-            border: 1px solid #d4af37;
-            color: #d4af37;
-            padding: 4px 12px;
-            font-size: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-open:hover {
-            background: #d4af37;
-            color: #000;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-center py-10">
@@ -68,25 +35,22 @@
     <div id="app" class="nexus-container">
         <!-- 头部 -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2 tracking-[0.2em]">SHENSI NEXUS</h1>
-            <p class="text-[10px] text-gray-500 tracking-[0.5em]">Digital Sovereignty Hub</p>
-            <div class="text-xs mt-4">
-                <span class="status-indicator status-online"></span>
-                <span class="text-green-500">All Systems Operational</span>
-            </div>
+            <h1 class="text-3xl font-bold text-white mb-2 tracking-[0.2em]">Shensi-ST</h1>
+            <p class="text-[10px] text-gray-500 tracking-[0.5em]">Digital Sovereignty Nexus</p>
         </div>
 
         <!-- 魔法轮 -->
         <div class="wheel-wrapper">
             <div class="magic-wheel-container">
                 <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
+                    <!-- 严格按照原始位置和图标 -->
                     <div class="wheel-item pos-0" :class="{'active-item text-green-500': activeTab==='music'}" @click="switchTab('music', 0)"><i class="fas fa-music"></i></div>
                     <div class="wheel-item pos-1" :class="{'active-item text-yellow-500': activeTab==='visual'}" @click="switchTab('visual', 1)"><i class="fas fa-film"></i></div>
                     <div class="wheel-item pos-2" :class="{'active-item text-purple-500': activeTab==='literature'}" @click="switchTab('literature', 2)"><i class="fas fa-book"></i></div>
                     <div class="wheel-item pos-3" :class="{'active-item text-red-500': activeTab==='agent'}" @click="switchTab('agent', 3)"><i class="fas fa-brain"></i></div>
                     <div class="wheel-item pos-4" :class="{'active-item text-gray-300': activeTab==='automation'}" @click="switchTab('automation', 4)"><i class="fas fa-ghost"></i></div>
                 </div>
-                <div class="wheel-center">NX</div>
+                <div class="wheel-center">ST</div>
             </div>
         </div>
 
@@ -94,83 +58,16 @@
         <div class="w-full">
             <h2 class="text-center text-lg font-bold tracking-widest mb-6" :style="{color: activeColor}">{{ activeTab.toUpperCase() }} MATRIX</h2>
             
-            <!-- MUSIC MATRIX (5个应用) -->
-            <div v-if="activeTab === 'music'" class="space-y-3">
-                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                    <div>
-                        <div class="flex items-center">
-                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
-                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
-                        </div>
-                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                    </div>
-                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
+            <!-- 动态渲染应用列表 -->
+            <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                <div>
+                    <div class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</div>
+                    <div class="text-[10px] text-gray-600">{{ app.description }}</div>
                 </div>
-            </div>
-            
-            <!-- VISUAL MATRIX (5个应用) -->
-            <div v-else-if="activeTab === 'visual'" class="space-y-3">
-                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                    <div>
-                        <div class="flex items-center">
-                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
-                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
-                        </div>
-                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                    </div>
-                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
-                </div>
-            </div>
-            
-            <!-- LITERATURE MATRIX (5个应用) -->
-            <div v-else-if="activeTab === 'literature'" class="space-y-3">
-                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                    <div>
-                        <div class="flex items-center">
-                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
-                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
-                        </div>
-                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                    </div>
-                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
-                </div>
-            </div>
-            
-            <!-- AGENT MATRIX (5个应用) -->
-            <div v-else-if="activeTab === 'agent'" class="space-y-3">
-                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                    <div>
-                        <div class="flex items-center">
-                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
-                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
-                        </div>
-                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                    </div>
-                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
-                </div>
-            </div>
-            
-            <!-- AUTOMATION MATRIX (6个应用) -->
-            <div v-else-if="activeTab === 'automation'" class="space-y-3">
-                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                    <div>
-                        <div class="flex items-center">
-                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
-                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
-                        </div>
-                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                    </div>
-                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
-                </div>
+                <div class="text-[10px]" :style="{color: activeColor}">{{ app.status === 'ready' ? 'OPEN >' : 'COMING SOON' }}</div>
             </div>
             
             <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
-        </div>
-        
-        <!-- 页脚信息 -->
-        <div class="mt-8 text-center text-xs text-gray-600">
-            <p>Nexus Hub v3.0 | Matrix Interface</p>
-            <p class="mt-1 text-[10px]">5 Categories • Total Applications: 26</p>
         </div>
     </div>
 
@@ -179,47 +76,51 @@
 
         createApp({
             setup() {
-                // 完整的应用矩阵 (5个板块，每个5个APP，AUTOMATION有6个)
+                // 严格按照原始分类和数量
                 const apps = ref([
                     // ==================== MUSIC MATRIX (5个) ====================
-                    { slug: 'music-synth', name: 'Audio Synthesizer', description: 'AI-powered real-time music synthesis', category: 'music', url: 'https://audio-synth.vercel.app/', status: 'DEPLOYED', statusClass: 'status-deployed', buttonText: 'OPEN >' },
-                    { slug: 'sound-designer', name: 'Sound Designer', description: 'Professional sound effects processing', category: 'music', url: 'https://sound-designer.vercel.app/', status: 'DEPLOYED', statusClass: 'status-deployed', buttonText: 'OPEN >' },
-                    { slug: 'rhythm-composer', name: 'Rhythm Composer', description: 'Automated beat pattern generation', category: 'music', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'music-analyzer', name: 'Music Analyzer', description: 'AI music structure analysis', category: 'music', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'audio-mixer', name: 'Audio Mixer Pro', description: 'Multi-track audio mixing tool', category: 'music', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'music-1', name: 'Audio Synthesizer', description: 'AI-powered music synthesis engine', category: 'music', url: '#', status: 'dev' },
+                    { slug: 'music-2', name: 'Sound Designer', description: 'Professional audio effects processor', category: 'music', url: '#', status: 'dev' },
+                    { slug: 'music-3', name: 'Rhythm Composer', description: 'Intelligent beat pattern generator', category: 'music', url: '#', status: 'dev' },
+                    { slug: 'music-4', name: 'Music Analyzer', description: 'AI music structure analysis tool', category: 'music', url: '#', status: 'dev' },
+                    { slug: 'music-5', name: 'Audio Mixer Pro', description: 'Multi-track audio mixing studio', category: 'music', url: '#', status: 'dev' },
                     
                     // ==================== VISUAL MATRIX (5个) ====================
-                    { slug: 'monitor-eye', name: 'Monitor Eye', description: 'AI visual difference analyzer', category: 'visual', url: 'https://monitor-eye.vercel.app/', status: 'READY', statusClass: 'status-ready', buttonText: 'OPEN >' },
-                    { slug: 'image-generator', name: 'Image Generator', description: 'AI image creation with style transfer', category: 'visual', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'video-editor', name: 'Video Editor', description: 'AI-powered video editing', category: 'visual', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: '3d-modeler', name: '3D Modeler', description: '3D model generation tool', category: 'visual', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'design-assistant', name: 'Design Assistant', description: 'UI/UX design automation', category: 'visual', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'visual-1', name: 'Image Generator', description: 'AI image creation with neural style', category: 'visual', url: '#', status: 'dev' },
+                    { slug: 'visual-2', name: 'Video Editor', description: 'AI-powered video processing suite', category: 'visual', url: '#', status: 'dev' },
+                    { slug: 'visual-3', name: '3D Modeler', description: '3D model generation and rendering', category: 'visual', url: '#', status: 'dev' },
+                    { slug: 'visual-4', name: 'Design Assistant', description: 'UI/UX design automation tool', category: 'visual', url: '#', status: 'dev' },
+                    { slug: 'visual-5', name: 'Visual Analyzer', description: 'Computer vision analysis platform', category: 'visual', url: '#', status: 'dev' },
                     
                     // ==================== LITERATURE MATRIX (5个) ====================
-                    { slug: 'vibe-coder', name: 'Vibe Coder', description: 'AI code generation & completion', category: 'literature', url: 'https://vibe-coder.vercel.app/', status: 'READY', statusClass: 'status-ready', buttonText: 'OPEN >' },
-                    { slug: 'text-assistant', name: 'Text Assistant', description: 'AI writing companion', category: 'literature', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'document-analyzer', name: 'Document Analyzer', description: 'AI document analysis tool', category: 'literature', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'translation-pro', name: 'Translation Pro', description: 'Multilingual translation tool', category: 'literature', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'content-generator', name: 'Content Generator', description: 'AI content creation assistant', category: 'literature', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'literature-1', name: 'Text Assistant', description: 'AI writing and editing companion', category: 'literature', url: '#', status: 'dev' },
+                    { slug: 'literature-2', name: 'Document Analyzer', description: 'Intelligent document processing', category: 'literature', url: '#', status: 'dev' },
+                    { slug: 'literature-3', name: 'Translation Pro', description: 'Multi-language translation system', category: 'literature', url: '#', status: 'dev' },
+                    { slug: 'literature-4', name: 'Content Generator', description: 'AI content creation assistant', category: 'literature', url: '#', status: 'dev' },
+                    { slug: 'literature-5', name: 'Research Assistant', description: 'Academic research support tool', category: 'literature', url: '#', status: 'dev' },
                     
                     // ==================== AGENT MATRIX (5个) ====================
-                    { slug: 'ai-agent', name: 'AI Agent', description: 'Autonomous task executor', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'data-miner', name: 'Data Miner', description: 'Intelligent data collection agent', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'research-assistant', name: 'Research Assistant', description: 'AI research information gatherer', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'workflow-bot', name: 'Workflow Bot', description: 'Automated workflow agent', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'scheduler-pro', name: 'Scheduler Pro', description: 'Intelligent task scheduling agent', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'agent-1', name: 'AI Agent', description: 'Autonomous task execution system', category: 'agent', url: '#', status: 'dev' },
+                    { slug: 'agent-2', name: 'Data Miner', description: 'Intelligent data collection agent', category: 'agent', url: '#', status: 'dev' },
+                    { slug: 'agent-3', name: 'Workflow Bot', description: 'Automated workflow management', category: 'agent', url: '#', status: 'dev' },
+                    { slug: 'agent-4', name: 'Scheduler Pro', description: 'Intelligent task scheduling', category: 'agent', url: '#', status: 'dev' },
+                    { slug: 'agent-5', name: 'Monitoring Agent', description: 'System monitoring and alerts', category: 'agent', url: '#', status: 'dev' },
                     
                     // ==================== AUTOMATION MATRIX (6个) ====================
-                    { slug: 'ghost-operator', name: 'Ghost Operator', description: 'Automation workflow & AI analysis matrix', category: 'automation', url: 'https://ghost-operator-7e8tt4m7h-jinvbars-projects.vercel.app/', status: 'READY', statusClass: 'status-ready', buttonText: 'OPEN >' },
-                    { slug: 'data-extractor', name: 'Data Extractor', description: 'Automated data extraction tool', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'auto-reporter', name: 'Auto Reporter', description: 'Automated report generation system', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'api-integrator', name: 'API Integrator', description: 'Multi-API integration automation', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'system-monitor', name: 'System Monitor', description: 'Automated system monitoring', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
-                    { slug: 'workflow-engine', name: 'Workflow Engine', description: 'Complex workflow automation engine', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' }
+                    // 已部署的真实应用
+                    { slug: 'ghost-operator', name: 'Ghost Operator', description: 'Automation workflow & AI analysis matrix', category: 'automation', url: 'https://ghost-operator-7e8tt4m7h-jinvbars-projects.vercel.app/', status: 'ready' },
+                    { slug: 'monitor-eye', name: 'Monitor Eye', description: 'AI visual difference analyzer', category: 'automation', url: 'https://monitor-eye.vercel.app/', status: 'ready' },
+                    { slug: 'vibe-coder', name: 'Vibe Coder', description: 'AI code generation & completion', category: 'automation', url: 'https://vibe-coder.vercel.app/', status: 'ready' },
+                    
+                    // 其他自动化应用
+                    { slug: 'auto-4', name: 'Data Extractor', description: 'Automated data extraction tool', category: 'automation', url: '#', status: 'dev' },
+                    { slug: 'auto-5', name: 'Auto Reporter', description: 'Automated report generation', category: 'automation', url: '#', status: 'dev' },
+                    { slug: 'auto-6', name: 'Workflow Engine', description: 'Complex workflow automation', category: 'automation', url: '#', status: 'dev' }
                 ]);
                 
-                const activeTab = ref('automation');
-                const wheelRotation = ref(-90 - (4 * 72)); // 默认选中automation
+                // 保持原始默认值
+                const activeTab = ref('music');  // 原始默认是music
+                const wheelRotation = ref(0);    // 原始默认是0
 
                 const switchTab = (tab, index) => {
                     activeTab.value = tab;
@@ -228,24 +129,29 @@
 
                 const currentList = computed(() => apps.value.filter(a => a.category === activeTab.value));
                 const activeColor = computed(() => ({
-                    'music':'#10b981','visual':'#f59e0b','literature':'#8b5cf6','agent':'#ef4444','automation':'#d1d5db'
+                    'music':'#10b981',
+                    'visual':'#f59e0b',
+                    'literature':'#8b5cf6',
+                    'agent':'#ef4444',
+                    'automation':'#d1d5db'
                 }[activeTab.value]));
 
-                // 🟢 修复的openApp函数
+                // 🟢 简化的openApp函数
                 const openApp = (app) => {
-                    console.log('Opening app:', app.name, 'URL:', app.url);
+                    console.log('Opening app:', app.name);
                     
                     if (!app.url || app.url === '#') {
+                        // 对于开发中的应用
                         alert('🚧 This application is under development and will be available soon!');
                         return;
                     }
                     
                     try {
-                        // 直接打开应用URL
+                        // 直接打开应用URL（已移除登录验证）
                         const newWindow = window.open(app.url, '_blank');
                         
                         if (!newWindow) {
-                            // 如果弹窗被阻止，提供提示
+                            // 如果弹窗被阻止，尝试在当前页打开
                             const openInCurrent = confirm(`Open ${app.name} in current tab?\n\n(Popup was blocked by browser)`);
                             if (openInCurrent) {
                                 window.location.href = app.url;
@@ -254,18 +160,22 @@
                         
                     } catch (error) {
                         console.error('Error opening app:', error);
-                        alert(`Error opening ${app.name}:\n${error.message}`);
+                        alert(`Error: ${error.message}`);
                     }
                 };
 
                 return { 
+                    user: ref(null),  // 保持与原结构一致
+                    email: ref(''),
+                    loading: ref(false),
+                    msg: ref(''),
                     apps, 
                     activeTab, 
-                    wheelRotation,
                     currentList, 
-                    activeColor,
+                    activeColor, 
+                    wheelRotation, 
                     switchTab, 
-                    openApp
+                    openApp 
                 };
             }
         }).mount('#app');
