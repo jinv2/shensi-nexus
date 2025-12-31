@@ -6,14 +6,12 @@
     <title>神思庭 | Shensi-Nexus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background-color: #000; color: #e5e5e5; font-family: monospace; overflow-x: hidden; }
-        .nexus-container { width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+        .nexus-container { width: 100%; max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
         .nexus-border { border: 1px solid #333; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); width: 100%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 15px; width: 100%; cursor: pointer; border: none; transition: 0.3s; }
-        .input-dark { background: #0a0a0a; border: 1px solid #444; color: #d4af37; width: 100%; padding: 15px; text-align: center; outline: none; margin-bottom: 10px; }
         
         /* 魔法轮 */
         .wheel-wrapper { display: flex; justify-content: center; margin: 30px 0; }
@@ -42,240 +40,197 @@
         }
         .status-online { background: #10b981; box-shadow: 0 0 8px #10b981; }
         .status-offline { background: #6b7280; }
+        .app-status {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+        .status-ready { background: #10b981; color: #000; }
+        .status-dev { background: #f59e0b; color: #000; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-center py-10">
 
-    <div id="app" class="nexus-container" style="display: none;">
+    <div id="app" class="nexus-container">
         <!-- 头部 -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2 tracking-[0.2em]">Shensi-ST</h1>
-            <p class="text-[10px] text-gray-500 tracking-[0.5em]">Digital Sovereignty Nexus</p>
-            <div id="connection-status" class="text-xs mt-2 hidden">
+            <h1 class="text-3xl font-bold text-white mb-2 tracking-[0.2em]">SHENSI NEXUS</h1>
+            <p class="text-[10px] text-gray-500 tracking-[0.5em]">Digital Sovereignty Hub</p>
+            <div class="text-xs mt-4">
                 <span class="status-indicator status-online"></span>
-                <span>Connected to Supabase</span>
+                <span class="text-green-500">All Systems Operational</span>
             </div>
         </div>
 
-        <!-- 登录 -->
-        <div v-if="!user" class="nexus-border p-8">
-            <p class="text-xs text-center text-gray-500 mb-6">LOGIN TO ACCESS MATRIX</p>
-            <input v-model="email" type="email" placeholder="EMAIL ADDRESS" class="input-dark">
-            <button @click="handleLogin" :disabled="loading" class="btn-main">{{ loading ? 'SENDING...' : 'LOGIN' }}</button>
-            <p v-if="msg" class="text-green-500 text-xs text-center mt-4">{{ msg }}</p>
-        </div>
-
-        <!-- 控制台 -->
-        <div v-else class="w-full">
-            <div class="flex justify-between text-xs text-gray-500 mb-4 px-4">
-                <span>{{ user.email }}</span>
-                <span @click="signOut" class="text-red-500 cursor-pointer">LOGOUT</span>
-            </div>
-
-            <!-- 魔法轮 -->
-            <div class="wheel-wrapper">
-                <div class="magic-wheel-container">
-                    <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
-                        <div class="wheel-item pos-0" :class="{'active-item text-green-500': activeTab==='music'}" @click="switchTab('music', 0)"><i class="fas fa-music"></i></div>
-                        <div class="wheel-item pos-1" :class="{'active-item text-yellow-500': activeTab==='visual'}" @click="switchTab('visual', 1)"><i class="fas fa-film"></i></div>
-                        <div class="wheel-item pos-2" :class="{'active-item text-purple-500': activeTab==='literature'}" @click="switchTab('literature', 2)"><i class="fas fa-book"></i></div>
-                        <div class="wheel-item pos-3" :class="{'active-item text-red-500': activeTab==='agent'}" @click="switchTab('agent', 3)"><i class="fas fa-brain"></i></div>
-                        <div class="wheel-item pos-4" :class="{'active-item text-gray-300': activeTab==='automation'}" @click="switchTab('automation', 4)"><i class="fas fa-ghost"></i></div>
-                    </div>
-                    <div class="wheel-center">ST</div>
+        <!-- 魔法轮 -->
+        <div class="wheel-wrapper">
+            <div class="magic-wheel-container">
+                <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
+                    <div class="wheel-item pos-0" :class="{'active-item text-green-500': activeTab==='music'}" @click="switchTab('music', 0)"><i class="fas fa-music"></i></div>
+                    <div class="wheel-item pos-1" :class="{'active-item text-yellow-500': activeTab==='visual'}" @click="switchTab('visual', 1)"><i class="fas fa-film"></i></div>
+                    <div class="wheel-item pos-2" :class="{'active-item text-purple-500': activeTab==='literature'}" @click="switchTab('literature', 2)"><i class="fas fa-book"></i></div>
+                    <div class="wheel-item pos-3" :class="{'active-item text-red-500': activeTab==='agent'}" @click="switchTab('agent', 3)"><i class="fas fa-brain"></i></div>
+                    <div class="wheel-item pos-4" :class="{'active-item text-gray-300': activeTab==='automation'}" @click="switchTab('automation', 4)"><i class="fas fa-ghost"></i></div>
                 </div>
+                <div class="wheel-center">NX</div>
             </div>
+        </div>
 
-            <!-- 列表 -->
-            <div class="min-h-[300px]">
-                <h2 class="text-center text-lg font-bold tracking-widest mb-6" :style="{color: activeColor}">{{ activeTab.toUpperCase() }} MATRIX</h2>
-                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+        <!-- 应用列表 -->
+        <div class="w-full">
+            <h2 class="text-center text-lg font-bold tracking-widest mb-6" :style="{color: activeColor}">{{ activeTab.toUpperCase() }} MATRIX</h2>
+            
+            <!-- AUTOMATION MATRIX 应用 -->
+            <div v-if="activeTab === 'automation'" class="space-y-3">
+                <div @click="openAppDirect('ghost-operator')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
                     <div>
-                        <div class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</div>
-                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
-                        <div v-if="app.url.includes('ghost-operator')" class="text-[9px] text-amber-500 mt-1">
+                        <div class="flex items-center">
+                            <span class="text-xs font-bold text-gray-300 mb-1">Ghost Operator</span>
+                            <span class="app-status status-ready">READY</span>
+                        </div>
+                        <div class="text-[10px] text-gray-600">自动化工作流与AI分析矩阵</div>
+                        <div class="text-[9px] text-amber-500 mt-1">
                             <span class="status-indicator status-online"></span>
-                            Click to launch Ghost Operator
+                            <span>点击直接打开 - 已移除登录验证</span>
                         </div>
                     </div>
                     <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
                 </div>
-                <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
+                
+                <div @click="openAppDirect('monitor-eye')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                    <div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-bold text-gray-300 mb-1">Monitor Eye</span>
+                            <span class="app-status status-ready">READY</span>
+                        </div>
+                        <div class="text-[10px] text-gray-600">AI视觉差异分析器</div>
+                        <div class="text-[9px] text-amber-500 mt-1">
+                            <span class="status-indicator status-online"></span>
+                            <span>点击直接打开 - 已移除登录验证</span>
+                        </div>
+                    </div>
+                    <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
+                </div>
+                
+                <div @click="openAppDirect('vibe-coder')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                    <div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-bold text-gray-300 mb-1">Vibe Coder</span>
+                            <span class="app-status status-ready">READY</span>
+                        </div>
+                        <div class="text-[10px] text-gray-600">AI代码生成与补全工具</div>
+                        <div class="text-[9px] text-amber-500 mt-1">
+                            <span class="status-indicator status-online"></span>
+                            <span>点击直接打开 - 已移除登录验证</span>
+                        </div>
+                    </div>
+                    <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
+                </div>
             </div>
             
-            <!-- 调试信息 -->
-            <div v-if="debugInfo" class="text-xs text-gray-600 mt-6 p-3 border border-gray-800 rounded">
-                <div class="mb-1">Debug Info:</div>
-                <div class="font-mono text-[10px]">{{ debugInfo }}</div>
+            <!-- 其他分类的占位应用 -->
+            <div v-else>
+                <div v-for="app in currentList" :key="app.slug" @click="openAppDirect('coming-soon')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                    <div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
+                            <span class="app-status status-dev">DEV</span>
+                        </div>
+                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
+                    </div>
+                    <div class="text-[10px]" :style="{color: activeColor}">COMING SOON</div>
+                </div>
+                <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
             </div>
+        </div>
+        
+        <!-- 页脚信息 -->
+        <div class="mt-8 text-center text-xs text-gray-600">
+            <p>Nexus Hub v2.0 | Direct Access Enabled</p>
+            <p class="mt-1">所有应用均已移除登录验证，可直接访问</p>
         </div>
     </div>
 
     <script>
-        const SB_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
-        
-        window.onload = function() {
-            const sb = supabase.createClient(SB_URL, SB_KEY);
-            const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed } = Vue;
 
-            createApp({
-                setup() {
-                    const user = ref(null);
-                    const email = ref('');
-                    const loading = ref(false);
-                    const msg = ref('');
-                    const apps = ref([]);
-                    const activeTab = ref('music');
-                    const wheelRotation = ref(0);
-                    const debugInfo = ref('');
+        createApp({
+            setup() {
+                const apps = ref([
+                    // 自动化应用 (已部署)
+                    { slug: 'ghost-operator', name: 'Ghost Operator', description: 'Automation workflow & AI analysis matrix', category: 'automation', url: 'https://ghost-operator-7e8tt4m7h-jinvbars-projects.vercel.app/' },
+                    { slug: 'monitor-eye', name: 'Monitor Eye', description: 'AI visual difference analyzer', category: 'automation', url: 'https://monitor-eye.vercel.app/' },
+                    { slug: 'vibe-coder', name: 'Vibe Coder', description: 'AI code generation & completion', category: 'automation', url: 'https://vibe-coder.vercel.app/' },
+                    
+                    // 其他分类的示例应用
+                    { slug: 'music-1', name: 'Audio Synthesizer', description: 'AI-powered music generation', category: 'music', url: '#' },
+                    { slug: 'visual-1', name: 'Image Generator', description: 'AI image creation tool', category: 'visual', url: '#' },
+                    { slug: 'literature-1', name: 'Text Assistant', description: 'AI writing companion', category: 'literature', url: '#' },
+                    { slug: 'agent-1', name: 'AI Agent', description: 'Autonomous task executor', category: 'agent', url: '#' },
+                ]);
+                
+                const activeTab = ref('automation');
+                const wheelRotation = ref(-90 - (4 * 72)); // 默认选中automation
 
-                    onMounted(async () => {
-                        console.log('Hub initializing...');
+                const switchTab = (tab, index) => {
+                    activeTab.value = tab;
+                    wheelRotation.value = -90 - (index * 72);
+                };
+
+                const currentList = computed(() => apps.value.filter(a => a.category === activeTab.value));
+                const activeColor = computed(() => ({
+                    'music':'#10b981','visual':'#f59e0b','literature':'#8b5cf6','agent':'#ef4444','automation':'#d1d5db'
+                }[activeTab.value]));
+
+                // 🟢 修复的openApp函数 - 直接打开应用，不传递token
+                const openAppDirect = (appSlug) => {
+                    console.log('Opening app:', appSlug);
+                    
+                    // 查找应用配置
+                    const app = apps.value.find(a => a.slug === appSlug);
+                    
+                    if (!app) {
+                        console.error('App not found:', appSlug);
+                        return;
+                    }
+                    
+                    // 对于"即将推出"的应用
+                    if (appSlug === 'coming-soon') {
+                        alert('🚧 This application is under development and will be available soon!');
+                        return;
+                    }
+                    
+                    console.log('App URL:', app.url);
+                    
+                    try {
+                        // 直接打开应用URL，不需要传递任何token参数
+                        // 因为我们已经移除了这些应用的登录验证
+                        const newWindow = window.open(app.url, '_blank');
                         
-                        const { data: { session } } = await sb.auth.getSession();
-                        if (session) {
-                            user.value = session.user;
-                            console.log('User session loaded:', session.user.email);
+                        if (!newWindow) {
+                            // 如果弹窗被阻止，尝试在当前页打开
+                            alert('Popup blocked! Click OK to open in current tab.');
+                            window.location.href = app.url;
                         }
                         
-                        // 拉取应用数据
-                        try {
-                            const { data, error } = await sb.from('apps').select('*');
-                            if (error) throw error;
-                            if (data) {
-                                apps.value = data;
-                                console.log('Apps loaded:', data.length);
-                            }
-                        } catch (error) {
-                            console.error('Failed to load apps:', error);
-                        }
-                        
-                        // 监听认证状态变化
-                        sb.auth.onAuthStateChange((event, session) => {
-                            console.log('Auth state changed:', event, session?.user?.email);
-                            user.value = session?.user || null;
-                        });
-                        
-                        // 显示应用界面
-                        document.getElementById('app').style.display = 'block';
-                        document.getElementById('connection-status').classList.remove('hidden');
-                    });
+                    } catch (error) {
+                        console.error('Error opening app:', error);
+                        alert('Error: ' + error.message);
+                    }
+                };
 
-                    const handleLogin = async () => {
-                        loading.value = true;
-                        msg.value = '';
-                        try {
-                            const { error } = await sb.auth.signInWithOtp({ 
-                                email: email.value,
-                                options: {
-                                    emailRedirectTo: window.location.origin
-                                }
-                            });
-                            if (error) {
-                                msg.value = "ERROR: " + error.message;
-                                console.error('Login error:', error);
-                            } else {
-                                msg.value = "CHECK YOUR EMAIL FOR LOGIN LINK!";
-                                console.log('Login link sent to:', email.value);
-                            }
-                        } catch (error) {
-                            msg.value = "ERROR: " + error.message;
-                            console.error('Login exception:', error);
-                        } finally {
-                            loading.value = false;
-                        }
-                    };
+                // 预定义的应用打开函数
+                const openGhostOperator = () => openAppDirect('ghost-operator');
+                const openMonitorEye = () => openAppDirect('monitor-eye');
+                const openVibeCoder = () => openAppDirect('vibe-coder');
 
-                    const signOut = async () => {
-                        await sb.auth.signOut();
-                        console.log('User signed out');
-                    };
-
-                    const switchTab = (tab, index) => {
-                        activeTab.value = tab;
-                        wheelRotation.value = -90 - (index * 72);
-                    };
-
-                    const currentList = computed(() => apps.value.filter(a => a.category === activeTab.value));
-                    const activeColor = computed(() => ({
-                        'music':'#10b981','visual':'#f59e0b','literature':'#8b5cf6','agent':'#ef4444','automation':'#d1d5db'
-                    }[activeTab.value]));
-
-                    // 🟢 核心修复：改进的openApp函数
-                    const openApp = async (app) => {
-                        console.log('Opening app:', app.name);
-                        
-                        const { data: { session } } = await sb.auth.getSession();
-                        if (!session) {
-                            alert("PLEASE LOGIN FIRST");
-                            return;
-                        }
-                        
-                        // 验证session有效性
-                        console.log('Session info:', {
-                            hasAccessToken: !!session.access_token,
-                            hasRefreshToken: !!session.refresh_token,
-                            expiresAt: new Date(session.expires_at * 1000),
-                            now: new Date(),
-                            isValid: session.expires_at > Date.now() / 1000
-                        });
-                        
-                        // 特别处理Ghost Operator
-                        if (app.url.includes('ghost-operator')) {
-                            debugInfo.value = `Launching Ghost Operator...`;
-                            
-                            // 创建重定向URL
-                            const ghostUrl = 'https://ghost-operator-m09d6ldj6-jinvbars-projects.vercel.app/';
-                            
-                            // 使用hash传递参数（推荐方式）
-                            const hashParams = new URLSearchParams();
-                            hashParams.set('access_token', session.access_token);
-                            hashParams.set('refresh_token', session.refresh_token);
-                            hashParams.set('from', 'shensi-hub');
-                            hashParams.set('timestamp', Date.now());
-                            hashParams.set('user_email', session.user.email || '');
-                            
-                            const fullUrl = `${ghostUrl}#${hashParams.toString()}`;
-                            
-                            console.log('Ghost Operator URL:', fullUrl);
-                            debugInfo.value = `Redirecting to: ${ghostUrl}`;
-                            
-                            // 打开新标签页
-                            const newWindow = window.open(fullUrl, '_blank');
-                            
-                            if (!newWindow) {
-                                alert('Popup blocked! Please allow popups for this site.');
-                                // 备选方案：在当前页跳转
-                                // window.location.href = fullUrl;
-                            }
-                            
-                            return;
-                        }
-                        
-                        // 其他应用的处理逻辑
-                        try {
-                            const url = new URL(app.url);
-                            const params = new URLSearchParams();
-                            params.set('access_token', session.access_token);
-                            params.set('refresh_token', session.refresh_token);
-                            url.hash = params.toString();
-                            
-                            window.open(url.toString(), '_blank');
-                        } catch (error) {
-                            console.error('Error opening app:', error);
-                            alert('Error opening application');
-                        }
-                    };
-
-                    return { 
-                        user, email, loading, msg, activeTab, currentList, 
-                        activeColor, wheelRotation, debugInfo, 
-                        switchTab, handleLogin, signOut, openApp 
-                    };
-                }
-            }).mount('#app');
-        }
+                return { 
+                    apps, activeTab, currentList, activeColor, wheelRotation,
+                    switchTab, openAppDirect, openGhostOperator, openMonitorEye, openVibeCoder
+                };
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
