@@ -47,6 +47,7 @@
         }
         .status-ready { background: #10b981; color: #000; }
         .status-dev { background: #f59e0b; color: #000; }
+        .status-deployed { background: #3b82f6; color: white; }
         .btn-open {
             background: transparent;
             border: 1px solid #d4af37;
@@ -93,193 +94,83 @@
         <div class="w-full">
             <h2 class="text-center text-lg font-bold tracking-widest mb-6" :style="{color: activeColor}">{{ activeTab.toUpperCase() }} MATRIX</h2>
             
-            <!-- AUTOMATION MATRIX 应用 -->
-            <div v-if="activeTab === 'automation'" class="space-y-3">
-                <div @click="openApp('ghost-operator')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+            <!-- MUSIC MATRIX (5个应用) -->
+            <div v-if="activeTab === 'music'" class="space-y-3">
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
                     <div>
                         <div class="flex items-center">
-                            <span class="text-xs font-bold text-gray-300 mb-1">Ghost Operator</span>
-                            <span class="app-status status-ready">READY</span>
+                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
+                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
                         </div>
-                        <div class="text-[10px] text-gray-600">自动化工作流与AI分析矩阵</div>
+                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
                     </div>
-                    <button class="btn-open" @click.stop="openApp('ghost-operator')">OPEN ></button>
-                </div>
-                
-                <div @click="openApp('monitor-eye')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                    <div>
-                        <div class="flex items-center">
-                            <span class="text-xs font-bold text-gray-300 mb-1">Monitor Eye</span>
-                            <span class="app-status status-ready">READY</span>
-                        </div>
-                        <div class="text-[10px] text-gray-600">AI视觉差异分析器</div>
-                    </div>
-                    <button class="btn-open" @click.stop="openApp('monitor-eye')">OPEN ></button>
-                </div>
-                
-                <div @click="openApp('vibe-coder')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                    <div>
-                        <div class="flex items-center">
-                            <span class="text-xs font-bold text-gray-300 mb-1">Vibe Coder</span>
-                            <span class="app-status status-ready">READY</span>
-                        </div>
-                        <div class="text-[10px] text-gray-600">AI代码生成与补全工具</div>
-                    </div>
-                    <button class="btn-open" @click.stop="openApp('vibe-coder')">OPEN ></button>
+                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
                 </div>
             </div>
             
-            <!-- 其他分类的应用 -->
-            <div v-else class="space-y-3">
-                <!-- MUSIC 分类 -->
-                <div v-if="activeTab === 'music'">
-                    <div @click="openApp('music-1')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Audio Synthesizer</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">AI-powered music generation with real-time synthesis</div>
+            <!-- VISUAL MATRIX (5个应用) -->
+            <div v-else-if="activeTab === 'visual'" class="space-y-3">
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                    <div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
+                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
                         </div>
-                        <button class="btn-open" @click.stop="openApp('music-1')">COMING SOON</button>
+                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
                     </div>
-                    
-                    <div @click="openApp('music-2')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Sound Designer</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">Professional sound effects and audio processing</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('music-2')">COMING SOON</button>
-                    </div>
-                    
-                    <div @click="openApp('music-3')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Rhythm Composer</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">Automated rhythm and beat pattern generation</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('music-3')">COMING SOON</button>
-                    </div>
-                </div>
-                
-                <!-- VISUAL 分类 -->
-                <div v-else-if="activeTab === 'visual'">
-                    <div @click="openApp('visual-1')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Image Generator</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">AI image creation with advanced style transfer</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('visual-1')">COMING SOON</button>
-                    </div>
-                    
-                    <div @click="openApp('visual-2')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Video Editor</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">AI-powered video editing and effects</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('visual-2')">COMING SOON</button>
-                    </div>
-                    
-                    <div @click="openApp('visual-3')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">3D Modeler</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">3D model generation and visualization</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('visual-3')">COMING SOON</button>
-                    </div>
-                </div>
-                
-                <!-- LITERATURE 分类 -->
-                <div v-else-if="activeTab === 'literature'">
-                    <div @click="openApp('literature-1')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Text Assistant</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">AI writing companion for creative writing</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('literature-1')">COMING SOON</button>
-                    </div>
-                    
-                    <div @click="openApp('literature-2')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Document Analyzer</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">AI document analysis and summarization</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('literature-2')">COMING SOON</button>
-                    </div>
-                    
-                    <div @click="openApp('literature-3')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Translation Pro</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">Advanced multilingual translation tool</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('literature-3')">COMING SOON</button>
-                    </div>
-                </div>
-                
-                <!-- AGENT 分类 -->
-                <div v-else-if="activeTab === 'agent'">
-                    <div @click="openApp('agent-1')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">AI Agent</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">Autonomous task executor and workflow agent</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('agent-1')">COMING SOON</button>
-                    </div>
-                    
-                    <div @click="openApp('agent-2')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Data Miner</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">Intelligent data collection and analysis agent</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('agent-2')">COMING SOON</button>
-                    </div>
-                    
-                    <div @click="openApp('agent-3')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
-                        <div>
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold text-gray-300 mb-1">Research Assistant</span>
-                                <span class="app-status status-dev">DEV</span>
-                            </div>
-                            <div class="text-[10px] text-gray-600">AI research assistant for information gathering</div>
-                        </div>
-                        <button class="btn-open" @click.stop="openApp('agent-3')">COMING SOON</button>
-                    </div>
+                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
                 </div>
             </div>
+            
+            <!-- LITERATURE MATRIX (5个应用) -->
+            <div v-else-if="activeTab === 'literature'" class="space-y-3">
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                    <div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
+                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
+                        </div>
+                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
+                    </div>
+                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
+                </div>
+            </div>
+            
+            <!-- AGENT MATRIX (5个应用) -->
+            <div v-else-if="activeTab === 'agent'" class="space-y-3">
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                    <div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
+                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
+                        </div>
+                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
+                    </div>
+                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
+                </div>
+            </div>
+            
+            <!-- AUTOMATION MATRIX (6个应用) -->
+            <div v-else-if="activeTab === 'automation'" class="space-y-3">
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                    <div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
+                            <span class="app-status" :class="app.statusClass">{{ app.status }}</span>
+                        </div>
+                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
+                    </div>
+                    <button class="btn-open" @click.stop="openApp(app)">{{ app.buttonText }}</button>
+                </div>
+            </div>
+            
+            <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
         </div>
         
         <!-- 页脚信息 -->
         <div class="mt-8 text-center text-xs text-gray-600">
-            <p>Nexus Hub v2.0 | Direct Access Enabled</p>
+            <p>Nexus Hub v3.0 | Matrix Interface</p>
+            <p class="mt-1 text-[10px]">5 Categories • Total Applications: 26</p>
         </div>
     </div>
 
@@ -288,12 +179,43 @@
 
         createApp({
             setup() {
-                // 使用ref定义响应式数据
+                // 完整的应用矩阵 (5个板块，每个5个APP，AUTOMATION有6个)
                 const apps = ref([
-                    // 自动化应用 (已部署)
-                    { slug: 'ghost-operator', name: 'Ghost Operator', description: 'Automation workflow & AI analysis matrix', category: 'automation', url: 'https://ghost-operator-7e8tt4m7h-jinvbars-projects.vercel.app/' },
-                    { slug: 'monitor-eye', name: 'Monitor Eye', description: 'AI visual difference analyzer', category: 'automation', url: 'https://monitor-eye.vercel.app/' },
-                    { slug: 'vibe-coder', name: 'Vibe Coder', description: 'AI code generation & completion', category: 'automation', url: 'https://vibe-coder.vercel.app/' },
+                    // ==================== MUSIC MATRIX (5个) ====================
+                    { slug: 'music-synth', name: 'Audio Synthesizer', description: 'AI-powered real-time music synthesis', category: 'music', url: 'https://audio-synth.vercel.app/', status: 'DEPLOYED', statusClass: 'status-deployed', buttonText: 'OPEN >' },
+                    { slug: 'sound-designer', name: 'Sound Designer', description: 'Professional sound effects processing', category: 'music', url: 'https://sound-designer.vercel.app/', status: 'DEPLOYED', statusClass: 'status-deployed', buttonText: 'OPEN >' },
+                    { slug: 'rhythm-composer', name: 'Rhythm Composer', description: 'Automated beat pattern generation', category: 'music', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'music-analyzer', name: 'Music Analyzer', description: 'AI music structure analysis', category: 'music', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'audio-mixer', name: 'Audio Mixer Pro', description: 'Multi-track audio mixing tool', category: 'music', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    
+                    // ==================== VISUAL MATRIX (5个) ====================
+                    { slug: 'monitor-eye', name: 'Monitor Eye', description: 'AI visual difference analyzer', category: 'visual', url: 'https://monitor-eye.vercel.app/', status: 'READY', statusClass: 'status-ready', buttonText: 'OPEN >' },
+                    { slug: 'image-generator', name: 'Image Generator', description: 'AI image creation with style transfer', category: 'visual', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'video-editor', name: 'Video Editor', description: 'AI-powered video editing', category: 'visual', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: '3d-modeler', name: '3D Modeler', description: '3D model generation tool', category: 'visual', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'design-assistant', name: 'Design Assistant', description: 'UI/UX design automation', category: 'visual', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    
+                    // ==================== LITERATURE MATRIX (5个) ====================
+                    { slug: 'vibe-coder', name: 'Vibe Coder', description: 'AI code generation & completion', category: 'literature', url: 'https://vibe-coder.vercel.app/', status: 'READY', statusClass: 'status-ready', buttonText: 'OPEN >' },
+                    { slug: 'text-assistant', name: 'Text Assistant', description: 'AI writing companion', category: 'literature', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'document-analyzer', name: 'Document Analyzer', description: 'AI document analysis tool', category: 'literature', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'translation-pro', name: 'Translation Pro', description: 'Multilingual translation tool', category: 'literature', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'content-generator', name: 'Content Generator', description: 'AI content creation assistant', category: 'literature', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    
+                    // ==================== AGENT MATRIX (5个) ====================
+                    { slug: 'ai-agent', name: 'AI Agent', description: 'Autonomous task executor', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'data-miner', name: 'Data Miner', description: 'Intelligent data collection agent', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'research-assistant', name: 'Research Assistant', description: 'AI research information gatherer', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'workflow-bot', name: 'Workflow Bot', description: 'Automated workflow agent', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'scheduler-pro', name: 'Scheduler Pro', description: 'Intelligent task scheduling agent', category: 'agent', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    
+                    // ==================== AUTOMATION MATRIX (6个) ====================
+                    { slug: 'ghost-operator', name: 'Ghost Operator', description: 'Automation workflow & AI analysis matrix', category: 'automation', url: 'https://ghost-operator-7e8tt4m7h-jinvbars-projects.vercel.app/', status: 'READY', statusClass: 'status-ready', buttonText: 'OPEN >' },
+                    { slug: 'data-extractor', name: 'Data Extractor', description: 'Automated data extraction tool', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'auto-reporter', name: 'Auto Reporter', description: 'Automated report generation system', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'api-integrator', name: 'API Integrator', description: 'Multi-API integration automation', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'system-monitor', name: 'System Monitor', description: 'Automated system monitoring', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' },
+                    { slug: 'workflow-engine', name: 'Workflow Engine', description: 'Complex workflow automation engine', category: 'automation', url: '#', status: 'DEV', statusClass: 'status-dev', buttonText: 'DEV' }
                 ]);
                 
                 const activeTab = ref('automation');
@@ -309,50 +231,30 @@
                     'music':'#10b981','visual':'#f59e0b','literature':'#8b5cf6','agent':'#ef4444','automation':'#d1d5db'
                 }[activeTab.value]));
 
-                // 🟢 修复的openApp函数 - 直接打开应用
-                const openApp = (appSlug) => {
-                    console.log('Opening app:', appSlug);
+                // 🟢 修复的openApp函数
+                const openApp = (app) => {
+                    console.log('Opening app:', app.name, 'URL:', app.url);
                     
-                    // 查找应用配置
-                    const app = apps.value.find(a => a.slug === appSlug);
-                    
-                    if (!app) {
-                        console.error('App not found:', appSlug);
-                        
-                        // 对于开发中的应用
-                        if (appSlug.includes('music-') || appSlug.includes('visual-') || 
-                            appSlug.includes('literature-') || appSlug.includes('agent-')) {
-                            alert('🚧 This application is under development and will be available soon!');
-                            return;
-                        }
-                        
-                        alert('Application not found!');
+                    if (!app.url || app.url === '#') {
+                        alert('🚧 This application is under development and will be available soon!');
                         return;
                     }
                     
-                    console.log('App URL:', app.url);
-                    
-                    // 检查是否是已部署的应用
-                    if (appSlug === 'ghost-operator' || appSlug === 'monitor-eye' || appSlug === 'vibe-coder') {
-                        try {
-                            // 直接打开应用URL
-                            const newWindow = window.open(app.url, '_blank');
-                            
-                            if (!newWindow) {
-                                // 如果弹窗被阻止，提供提示
-                                const openInCurrent = confirm('Popup blocked! Click OK to open in current tab, Cancel to keep browsing.');
-                                if (openInCurrent) {
-                                    window.location.href = app.url;
-                                }
+                    try {
+                        // 直接打开应用URL
+                        const newWindow = window.open(app.url, '_blank');
+                        
+                        if (!newWindow) {
+                            // 如果弹窗被阻止，提供提示
+                            const openInCurrent = confirm(`Open ${app.name} in current tab?\n\n(Popup was blocked by browser)`);
+                            if (openInCurrent) {
+                                window.location.href = app.url;
                             }
-                            
-                        } catch (error) {
-                            console.error('Error opening app:', error);
-                            alert('Error opening application: ' + error.message);
                         }
-                    } else {
-                        // 对于开发中的应用
-                        alert('🚧 This application is under development and will be available soon!');
+                        
+                    } catch (error) {
+                        console.error('Error opening app:', error);
+                        alert(`Error opening ${app.name}:\n${error.message}`);
                     }
                 };
 
