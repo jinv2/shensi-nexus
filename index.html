@@ -80,13 +80,12 @@
         .pos-0 { transform: rotate(0deg) translate(90px) rotate(0deg); }     /* 右: 音乐 */
         .pos-1 { transform: rotate(90deg) translate(90px) rotate(-90deg); }  /* 下: 影视 */
         .pos-2 { transform: rotate(180deg) translate(90px) rotate(-180deg); }/* 左: 文学 */
-        .pos-3 { transform: rotate(270deg) translate(90px) rotate(-270deg); }/* 上: 智能体 (新) */
+        .pos-3 { transform: rotate(270deg) translate(90px) rotate(-270deg); }/* 上: 智能体 */
 
         /* 激活状态辉光 */
         .active-music { box-shadow: 0 0 25px #10b981; border-color: #10b981; color: #10b981; background: #000; transform: scale(1.2); }
         .active-cinema { box-shadow: 0 0 25px #f59e0b; border-color: #f59e0b; color: #f59e0b; background: #000; transform: scale(1.2); }
         .active-lit { box-shadow: 0 0 25px #8b5cf6; border-color: #8b5cf6; color: #8b5cf6; background: #000; transform: scale(1.2); }
-        /* 🔴 新增：智能体激活样式 (绯红) */
         .active-agent { box-shadow: 0 0 25px #ef4444; border-color: #ef4444; color: #ef4444; background: #000; transform: scale(1.2); }
 
         /* APP 列表项 */
@@ -161,7 +160,7 @@
                             <i class="fas fa-book"></i>
                         </div>
                         
-                        <!-- 3: Agent (Red) - 新增 -->
+                        <!-- 3: Agent (Red) -->
                         <div class="wheel-item pos-3" :class="{'active-agent': activeTab === 'agent'}" @click="switchTab('agent', 3)">
                             <i class="fas fa-brain"></i>
                         </div>
@@ -265,6 +264,7 @@
                             role.value = profile?.role || 'guest';
 
                             if (role.value !== 'guest') {
+                                // 修正：拉取所有APP，不分状态，前端过滤
                                 const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
                                 apps.value = appsData || [];
                                 const { data: invites } = await sbClient.from('invite_codes').select('*').eq('created_by', user.value.id).order('is_used', { ascending: true });
@@ -298,7 +298,6 @@
                             if(activeTab.value === 'music') return apps.value.filter(a => !a.category || a.category === 'music');
                             if(activeTab.value === 'visual') return apps.value.filter(a => a.category === 'visual');
                             if(activeTab.value === 'literature') return apps.value.filter(a => a.category === 'literature');
-                            // 新增：智能体分类
                             if(activeTab.value === 'agent') return apps.value.filter(a => a.category === 'agent');
                             return [];
                         });
@@ -307,7 +306,7 @@
                             if(activeTab.value === 'music') return 'MUSIC MATRIX';
                             if(activeTab.value === 'visual') return 'CINEMA MATRIX';
                             if(activeTab.value === 'literature') return 'LITERATURE MATRIX';
-                            if(activeTab.value === 'agent') return 'AGENT MATRIX'; // 新标题
+                            if(activeTab.value === 'agent') return 'AGENT MATRIX';
                             return 'LOCKED SECTOR';
                         });
 
@@ -315,7 +314,7 @@
                             if(activeTab.value === 'music') return 'text-green-500';
                             if(activeTab.value === 'visual') return 'text-yellow-500';
                             if(activeTab.value === 'literature') return 'text-purple-500';
-                            if(activeTab.value === 'agent') return 'text-red-500'; // 新颜色
+                            if(activeTab.value === 'agent') return 'text-red-500'; 
                             return 'text-gray-500';
                         });
 
@@ -323,7 +322,7 @@
                             if(activeTab.value === 'music') return '#10b981';
                             if(activeTab.value === 'visual') return '#f59e0b';
                             if(activeTab.value === 'literature') return '#8b5cf6';
-                            if(activeTab.value === 'agent') return '#ef4444'; // 新颜色
+                            if(activeTab.value === 'agent') return '#ef4444'; 
                             return '#555';
                         });
 
@@ -358,7 +357,7 @@
 
                         const copyCode = (c) => navigator.clipboard.writeText(c);
                         
-                        // Token Passing
+                        // 🟢 Token Passing 跳转
                         const openApp = async (app) => {
                             const { data: { session } } = await sbClient.auth.getSession();
                             if (session) {
