@@ -3,440 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>神思庭 | Shensi-Nexus</title>
-    
-    <!-- 核心库 -->
-    <script src="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>Monitor Eye | 天眼监控</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
+    <script type="importmap"> { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } } </script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        /* 全局基础 */
-        body { background-color: #000; color: #e5e5e5; font-family: 'Courier New', monospace; overflow-x: hidden; }
+        body { background: #000; color: #10b981; font-family: 'Share Tech Mono', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
-        /* 动态背景 Canvas */
-        #data-stream {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; opacity: 0.3; pointer-events: none;
-        }
+        /* 玻璃墙 */
+        #glass-wall { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; }
+        .lock-card { border: 1px solid #10b981; padding: 40px; text-align: center; background: #001100; box-shadow: 0 0 30px rgba(16, 185, 129, 0.2); }
+        .btn-green { background: #064e3b; color: #fff; border: 1px solid #10b981; padding: 10px 30px; margin-top: 20px; display: inline-block; text-decoration: none; cursor: pointer; }
+        .btn-green:hover { background: #10b981; color: #000; }
 
-        /* 核心容器 */
-        .nexus-container { width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; }
-
-        /* 边框风格 */
-        .nexus-border { 
-            border: 1px solid #333; 
-            background: rgba(10,10,10,0.85); /* 降低不透明度以透出背景 */
-            box-shadow: 0 0 30px rgba(0,0,0,0.8); 
-            backdrop-filter: blur(8px); 
-            width: 100%;
-            border-radius: 4px;
-        }
-
-        /* 交互组件 */
-        .btn-main { 
-            background: #d4af37; color: #000; font-weight: 800; 
-            padding: 15px; width: 100%; cursor: pointer; 
-            text-transform: uppercase; letter-spacing: 2px; border: none;
-            transition: 0.3s;
-        }
-        .btn-main:hover { background: #fff; box-shadow: 0 0 20px #d4af37; }
-        
-        .input-dark { 
-            background: #0a0a0a; border: 1px solid #444; color: #d4af37; 
-            width: 100%; padding: 15px; text-align: center; outline: none; 
-            font-size: 14px; margin-bottom: 10px;
-        }
-        .input-dark:focus { border-color: #d4af37; }
-
-        /* === V5.0 五维魔法轮 (72度分布) === */
-        .wheel-wrapper {
-            display: flex; justify-content: center; align-items: center;
-            width: 100%; margin: 30px 0;
-        }
-        .magic-wheel-container { 
-            position: relative; width: 280px; height: 280px; 
-        }
-        .magic-wheel {
-            width: 100%; height: 100%; border-radius: 50%;
-            border: 2px solid #222; position: relative;
-            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-            background: radial-gradient(circle, #111 0%, #000 70%);
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        }
-        /* 中心 */
-        .wheel-center {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90px; height: 90px; border-radius: 50%;
-            background: #000; border: 1px solid #333;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10; font-size: 28px; color: #fff; text-shadow: 0 0 10px #fff;
-        }
-        /* 扇形按钮位置 (半径100px) */
-        .wheel-item {
-            position: absolute; top: 50%; left: 50%;
-            width: 54px; height: 54px; margin-left: -27px; margin-top: -27px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s;
-            border-radius: 50%; background: #0a0a0a; border: 1px solid #333;
-            color: #555;
-        }
-        /* 五点布局：0, 72, 144, 216, 288 度 */
-        .pos-0 { transform: rotate(0deg) translate(100px) rotate(0deg); }      /* Music */
-        .pos-1 { transform: rotate(72deg) translate(100px) rotate(-72deg); }   /* Cinema */
-        .pos-2 { transform: rotate(144deg) translate(100px) rotate(-144deg); } /* Lit */
-        .pos-3 { transform: rotate(216deg) translate(100px) rotate(-216deg); } /* Agent */
-        .pos-4 { transform: rotate(288deg) translate(100px) rotate(-288deg); } /* Auto (New) */
-
-        /* 激活状态辉光 */
-        .active-music { box-shadow: 0 0 25px #10b981; border-color: #10b981; color: #10b981; background: #000; transform: scale(1.2); }
-        .active-cinema { box-shadow: 0 0 25px #f59e0b; border-color: #f59e0b; color: #f59e0b; background: #000; transform: scale(1.2); }
-        .active-lit { box-shadow: 0 0 25px #8b5cf6; border-color: #8b5cf6; color: #8b5cf6; background: #000; transform: scale(1.2); }
-        .active-agent { box-shadow: 0 0 25px #ef4444; border-color: #ef4444; color: #ef4444; background: #000; transform: scale(1.2); }
-        /* ⚪ 银色自动化 */
-        .active-auto { box-shadow: 0 0 25px #e5e7eb; border-color: #e5e7eb; color: #e5e7eb; background: #000; transform: scale(1.2); }
-
-        /* APP 列表项 */
-        .app-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px; margin-bottom: 10px;
-            border-left: 4px solid transparent;
-            transition: 0.2s;
-            cursor: pointer;
-        }
-        .app-btn {
-            padding: 5px 15px; border: 1px solid #444; 
-            font-size: 10px; font-weight: bold; background: #000;
-            white-space: nowrap; cursor: pointer; transition: all 0.3s ease;
-        }
-        .app-btn:hover { background: #fff; color: #000 !important; }
+        .monitor-grid { display: grid; grid-template-columns: 1fr 1fr; flex: 1; gap: 2px; background: #064e3b; }
+        .cam-view { background: #000; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .cam-overlay { position: absolute; top: 10px; left: 10px; background: #000; padding: 2px 5px; font-size: 12px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-center py-10">
-
-    <!-- 动态背景 -->
-    <canvas id="data-stream"></canvas>
-
-    <div id="app" class="nexus-container" style="display: none;">
-        
-        <!-- 头部 -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-white mb-2 uppercase tracking-[0.2em]">Shensi-ST</h1>
-            <div class="h-px w-20 bg-yellow-800 mx-auto mb-3"></div>
-            <p class="text-[10px] text-gray-500 tracking-[0.5em] uppercase">Digital Sovereignty Nexus</p>
-        </div>
-
-        <!-- 1. 登录界面 -->
-        <div v-if="!user" class="nexus-border p-10 w-full animate-pulse">
-            <div class="text-center mb-8">
-                <i class="fas fa-fingerprint text-4xl text-gray-600 mb-4"></i>
-                <p class="text-xs text-gray-400 tracking-widest uppercase">Identity Verification Required</p>
-            </div>
-            <input v-model="email" type="email" placeholder="ENTER ACCESS EMAIL" class="input-dark">
-            <button @click="handleLogin" :disabled="loading" class="btn-main">
-                {{ loading ? 'CONNECTING...' : 'INITIALIZE SYSTEM' }}
-            </button>
-        </div>
-
-        <!-- 2. 主控制台 -->
-        <div v-else class="w-full">
-            
-            <!-- 身份条 -->
-            <div class="flex justify-between items-center text-[10px] text-gray-500 mb-4 px-2 border-b border-gray-900 pb-2 bg-black/50">
-                <div>OP: <span class="text-white font-mono">{{ user.email.split('@')[0] }}</span></div>
-                <div class="border px-2 py-0.5 border-gray-800" :class="isVip ? 'text-yellow-500' : 'text-gray-500'">
-                    {{ isVip ? 'ARCHITECT' : 'MEMBER' }}
-                </div>
-            </div>
-
-            <!-- 🎡 V5.0 魔法轮 -->
-            <div class="wheel-wrapper">
-                <div class="magic-wheel-container">
-                    <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
-                        
-                        <!-- 0: Music (Green) -->
-                        <div class="wheel-item pos-0" :class="{'active-music': activeTab === 'music'}" @click="switchTab('music', 0)">
-                            <i class="fas fa-music"></i>
-                        </div>
-                        
-                        <!-- 1: Cinema (Gold) -->
-                        <div class="wheel-item pos-1" :class="{'active-cinema': activeTab === 'visual'}" @click="switchTab('visual', 1)">
-                            <i class="fas fa-film"></i>
-                        </div>
-                        
-                        <!-- 2: Literature (Purple) -->
-                        <div class="wheel-item pos-2" :class="{'active-lit': activeTab === 'literature'}" @click="switchTab('literature', 2)">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        
-                        <!-- 3: Agent (Red) -->
-                        <div class="wheel-item pos-3" :class="{'active-agent': activeTab === 'agent'}" @click="switchTab('agent', 3)">
-                            <i class="fas fa-brain"></i>
-                        </div>
-
-                        <!-- 4: Automation (Silver) - NEW -->
-                        <div class="wheel-item pos-4" :class="{'active-auto': activeTab === 'automation'}" @click="switchTab('automation', 4)">
-                            <i class="fas fa-ghost"></i>
-                        </div>
-
-                    </div>
-                    <!-- 中心 -->
-                    <div class="wheel-center">ST</div>
-                </div>
-            </div>
-
-            <!-- 📂 动态资产列表 -->
-            <div class="min-h-[350px] w-full">
-                
-                <!-- 标题 -->
-                <div class="text-center mb-6">
-                    <h2 class="text-lg font-bold tracking-[0.3em] uppercase" :class="titleColor">
-                        {{ activeTitle }}
-                    </h2>
-                    <p v-if="activeTab === 'automation'" class="text-[10px] text-gray-500 mt-2">NO-API RPA PROTOCOL ACTIVE</p>
-                </div>
-
-                <!-- 列表渲染 -->
-                <div>
-                    <div v-for="app in currentList" :key="app.slug" @click="openApp(app)"
-                         class="nexus-border app-item cursor-pointer hover:bg-gray-900 group"
-                         :style="{ borderLeftColor: activeColor }">
-                        
-                        <div class="flex-1 pr-4">
-                            <div class="text-xs font-bold text-gray-300 group-hover:text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
-                            <div class="text-[10px] text-gray-600 font-mono">{{ app.description }}</div>
-                        </div>
-                        
-                        <div class="app-btn" :style="{ color: activeColor, borderColor: activeColor }">
-                            {{ getBtnText(activeTab) }}
-                        </div>
-                    </div>
-                    
-                    <div v-if="currentList.length === 0" class="text-center text-[10px] text-gray-700 py-10 border border-dashed border-gray-900">
-                        [ NO MODULES DETECTED ]
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- 底部功能 -->
-            <div class="mt-8 border-t border-gray-900 pt-4 flex justify-between items-center px-2 bg-black/50">
-                <div class="text-[10px] text-gray-500 cursor-pointer hover:text-white" @click="showInvites = !showInvites">
-                    GIFT CODES ({{ myInvites.length }})
-                </div>
-                <div class="text-[10px] text-red-900 cursor-pointer hover:text-red-500" @click="signOut">
-                    [ LOGOUT ]
-                </div>
-            </div>
-
-            <!-- 邀请码 -->
-            <div v-if="showInvites" class="mt-4 nexus-border p-4">
-                <div v-for="inv in myInvites" :key="inv.id" class="flex justify-between items-center mb-2 text-[10px] border-b border-gray-800 pb-1">
-                    <span :class="inv.is_used ? 'text-gray-700 line-through' : 'text-yellow-600 font-bold'">{{ inv.code }}</span>
-                    <span v-if="!inv.is_used" class="text-gray-500 cursor-pointer hover:text-white" @click="copyCode(inv.code)">COPY</span>
-                    <span v-else class="text-gray-800">USED</span>
-                </div>
-                <div class="mt-4 flex gap-2">
-                    <input v-model="inviteCode" placeholder="ACTIVATE CODE" class="bg-black border border-gray-800 text-[10px] p-2 flex-1 text-center text-gray-500 outline-none focus:border-yellow-600">
-                    <button @click="redeem" class="bg-gray-900 text-gray-500 text-[10px] px-4 hover:bg-gray-800 hover:text-white">EXEC</button>
-                </div>
-            </div>
-
+<body>
+    
+    <!-- 🛡️ 玻璃墙 -->
+    <div id="glass-wall">
+        <div class="lock-card">
+            <h2 class="text-2xl mb-4">SURVEILLANCE LOCKED</h2>
+            <p class="text-xs opacity-70">AUTHORIZATION REQUIRED</p>
+            <a href="https://shensi-nexus.vercel.app" class="btn-green">ACCESS HUB</a>
         </div>
     </div>
 
-    <script>
-        // --- 动态背景逻辑 (Data Stream) ---
-        const canvas = document.getElementById('data-stream');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        const particles = [];
+    <!-- 顶部 -->
+    <div class="h-[50px] border-b border-green-900 flex justify-between items-center px-4 shrink-0 bg-black">
+        <span class="text-lg tracking-widest">MONITOR EYE v1.0</span>
+        <div class="flex gap-4 items-center">
+            <span id="user-status" class="text-xs">CONNECTING...</span>
+            <button onclick="handleLogout()" class="text-xs border border-green-800 px-2 py-1 hover:bg-green-900">[ LOGOUT ]</button>
+        </div>
+    </div>
 
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+    <div class="monitor-grid">
+        <div class="cam-view" onclick="document.getElementById('file1').click()">
+            <div class="cam-overlay">CAM 01 (BEFORE)</div>
+            <img id="img1" class="max-h-full max-w-full hidden">
+            <span class="text-xs text-gray-500">CLICK TO UPLOAD</span>
+            <input type="file" id="file1" hidden onchange="loadFile(this, 'img1')">
+        </div>
+        <div class="cam-view" onclick="document.getElementById('file2').click()">
+            <div class="cam-overlay">CAM 02 (AFTER)</div>
+            <img id="img2" class="max-h-full max-w-full hidden">
+            <span class="text-xs text-gray-500">CLICK TO UPLOAD</span>
+            <input type="file" id="file2" hidden onchange="loadFile(this, 'img2')">
+        </div>
+    </div>
+    
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2">
+        <button onclick="analyzeDiff()" id="scan-btn" class="bg-green-700 text-white px-8 py-3 rounded font-bold shadow-lg hover:bg-green-600 transition">
+            ANALYZE DIFFERENCE
+        </button>
+    </div>
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.size = Math.random() * 2;
-                this.color = `rgba(100, 100, 100, ${Math.random() * 0.5})`;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.x < 0 || this.x > width) this.vx *= -1;
-                if (this.y < 0 || this.y > height) this.vy *= -1;
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        for (let i = 0; i < 50; i++) particles.push(new Particle());
-
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            // 连线
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist < 100) {
-                        ctx.strokeStyle = `rgba(100, 100, 100, ${0.1 - dist/1000})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-        animate();
-        // -----------------------------
-
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
         const SB_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
+        const GEMINI_KEY = 'AIzaSyAAilSsHdHTUseTZYxw-Wp0H9dtH-F_zpc'; 
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+        let b64_1 = null, b64_2 = null;
 
-        window.onload = function() {
-            try {
-                if (typeof Vue === 'undefined' || typeof supabase === 'undefined') throw new Error("Network Error");
-                const sbClient = supabase.createClient(SB_URL, SB_KEY);
-                const { createApp, ref, onMounted, computed } = Vue;
+        // 🟢 核心 SSO 鉴权
+        (async function initAuth() {
+            const hash = window.location.hash;
+            
+            // 1. 检查 URL 令牌 (从主页跳来)
+            if (hash && hash.includes('access_token')) {
+                const params = new URLSearchParams(hash.substring(1));
+                const { data, error } = await sb.auth.setSession({
+                    access_token: params.get('access_token'),
+                    refresh_token: params.get('refresh_token')
+                });
+                if (!error && data.session) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    unlockUI(data.session.user.email);
+                    return;
+                }
+            }
 
-                createApp({
-                    setup() {
-                        const user = ref(null);
-                        const email = ref('');
-                        const loading = ref(false);
-                        const apps = ref([]);
-                        const myInvites = ref([]);
-                        const inviteCode = ref('');
-                        const showInvites = ref(false);
-                        const role = ref('guest');
-                        const userCount = ref(0);
-                        
-                        const activeTab = ref('music'); 
-                        const wheelRotation = ref(0);
+            // 2. 检查本地 Session
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                unlockUI(session.user.email);
+            } else {
+                document.getElementById('user-status').innerText = "LOCKED";
+            }
+        })();
 
-                        const initSystem = async () => {
-                            const { data: profile } = await sbClient.from('profiles').select('role').eq('id', user.value.id).single();
-                            role.value = profile?.role || 'guest';
+        function unlockUI(email) {
+            document.getElementById('glass-wall').style.display = 'none';
+            document.getElementById('user-status').innerText = "AGENT: " + email;
+        }
 
-                            if (role.value !== 'guest') {
-                                const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
-                                apps.value = appsData || [];
-                                const { data: invites } = await sbClient.from('invite_codes').select('*').eq('created_by', user.value.id).order('is_used', { ascending: true });
-                                myInvites.value = invites || [];
-                                if (role.value === 'architect') {
-                                    const { count } = await sbClient.from('profiles').select('*', { count: 'exact', head: true });
-                                    userCount.value = count || 0;
-                                }
-                            }
-                        };
-
-                        onMounted(async () => {
-                            const { data: { session } } = await sbClient.auth.getSession();
-                            if (session) {
-                                user.value = session.user;
-                                await initSystem();
-                            }
-                            sbClient.auth.onAuthStateChange((_e, session) => {
-                                user.value = session?.user || null;
-                                if(user.value) initSystem();
-                            });
-                            document.getElementById('app').style.display = 'block';
-                        });
-
-                        // 🎡 V5.0 旋转逻辑 (72度每格)
-                        // 0: Music, 1: Cinema, 2: Lit, 3: Agent, 4: Auto
-                        const switchTab = (tab, index) => {
-                            activeTab.value = tab;
-                            // 目标是让 index 转到顶部 (-90 deg in visuals, let's just use linear offset)
-                            // 初始：0在右(0deg). 顶部是 -90deg.
-                            // 0号 -> -90
-                            // 1号 -> -90 - 72 = -162
-                            // 2号 -> -90 - 144 = -234
-                            // ...
-                            wheelRotation.value = -90 - (index * 72);
-                        };
-
-                        const isVip = computed(() => role.value === 'architect' || role.value === 'member');
-                        
-                        const currentList = computed(() => {
-                            if(activeTab.value === 'music') return apps.value.filter(a => !a.category || a.category === 'music');
-                            if(activeTab.value === 'visual') return apps.value.filter(a => a.category === 'visual');
-                            if(activeTab.value === 'literature') return apps.value.filter(a => a.category === 'literature');
-                            if(activeTab.value === 'agent') return apps.value.filter(a => a.category === 'agent');
-                            if(activeTab.value === 'automation') return apps.value.filter(a => a.category === 'automation');
-                            return [];
-                        });
-
-                        const activeTitle = computed(() => {
-                            if(activeTab.value === 'music') return 'MUSIC MATRIX';
-                            if(activeTab.value === 'visual') return 'CINEMA MATRIX';
-                            if(activeTab.value === 'literature') return 'LITERATURE MATRIX';
-                            if(activeTab.value === 'agent') return 'AGENT MATRIX';
-                            if(activeTab.value === 'automation') return 'AUTOMATION MATRIX';
-                            return 'LOCKED SECTOR';
-                        });
-
-                        const titleColor = computed(() => {
-                            if(activeTab.value === 'music') return 'text-green-500';
-                            if(activeTab.value === 'visual') return 'text-yellow-500';
-                            if(activeTab.value === 'literature') return 'text-purple-500';
-                            if(activeTab.value === 'agent') return 'text-red-500';
-                            if(activeTab.value === 'automation') return 'text-gray-300';
-                            return 'text-gray-500';
-                        });
-
-                        const activeColor = computed(() => {
-                            if(activeTab.value === 'music') return '#10b981';
-                            if(activeTab.value === 'visual') return '#f59e0b';
-                            if(activeTab.value === 'literature') return '#8b5cf6';
-                            if(activeTab.value === 'agent') return '#ef4444';
-                            if(activeTab.value === 'automation') return '#d1d5db';
-                            return '#555';
-                        });
-
-                        const getBtnText = (tab) => {
-                            if(tab === 'agent') return 'ACTIVATE';
-                            if(tab === 'automation') return 'DEPLOY';
-                            return 'OPEN >';
-                        }
-
-                        const handleLogin = async () => { /* ...省略重复代码... */ };
-                        const redeem = async () => { /* ...省略重复代码... */ };
-                        const copyCode = (c) => navigator.clipboard.writeText(c);
-                        const openApp = async (app) => { /* ...省略... */ window.open(app.url, '_blank'); };
-                        const signOut = () => sbClient.auth.signOut();
-
-                        return { 
-                            user, email, loading, myInvites, inviteCode, showInvites,
-                            handleLogin, signOut, isVip, redeem, copyCode, openApp,
-                            activeTab, wheelRotation, switchTab, currentList, activeTitle, titleColor, activeColor, getBtnText, userCount
-                        };
-                    }
-                }).mount('#app');
-            } catch (err) { console.error(err); }
+        window.handleLogout = async () => {
+            await sb.auth.signOut();
+            window.location.reload();
         };
+
+        window.loadFile = (input, imgId) => {
+            const file = input.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById(imgId).src = e.target.result;
+                    document.getElementById(imgId).classList.remove('hidden');
+                    if(imgId === 'img1') b64_1 = e.target.result.split(',')[1];
+                    if(imgId === 'img2') b64_2 = e.target.result.split(',')[1];
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        window.analyzeDiff = async () => {
+            if(!b64_1 || !b64_2) return alert("Upload both images");
+            const btn = document.getElementById('scan-btn');
+            btn.innerText = "SCANNING..."; btn.disabled = true;
+            
+            try {
+                const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const result = await model.generateContent([
+                    "Compare these two UI screenshots. List 3 key changes or differences.",
+                    { inlineData: { data: b64_1, mimeType: "image/jpeg" } },
+                    { inlineData: { data: b64_2, mimeType: "image/jpeg" } }
+                ]);
+                alert(result.response.text());
+            } catch(e) { alert("AI Error: " + e.message); }
+            finally { btn.innerText = "ANALYZE DIFFERENCE"; btn.disabled = false; }
+        }
     </script>
 </body>
 </html>
