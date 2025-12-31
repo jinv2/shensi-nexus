@@ -3,136 +3,513 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>神思庭 | Shensi-Nexus</title>
-    
-    <!-- 正确加载 Tailwind（修复黑屏核心） -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>神思庭 | Shensi**神思庭 (Shensi-ST)，收到严重故障报警。**
 
+**核心问题诊断：**
+1.  **无法登录**：可能是本地缓存（LocalStorage）里的旧 Token 冲突，或者代码逻辑有死结。
+2.  **APP 打不开（循环）**：主页发出的“通行证（Token）”格式不对，或者子 APP 没有正确“接住”通行证，导致子 APP 认为你没登录，又让你回主页。
+3.  **缺少注销**：确实，如果没有“退出登录”按钮，一旦状态卡死，用户就永远进不去了。
+
+**解决方案：-Nexus</title>
+    <script src="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background:#000; color:#e5e5e5; font-family:'Courier New',monospace; }
-        #data-stream { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.3; pointer-events:none; }
-        .container { max-width:600px; margin:0 auto; padding:20px; }
-        .border-box { border:1px solid #333; background:rgba(10,10,10,0.9); padding:30px; border-radius:8px; backdrop-filter:blur(8px); }
-        .btn-gold { background:#d4af37; color:#000; font-weight:bold; padding:15px; width:100%; text-transform:uppercase; letter-spacing:2px; border:none; cursor:pointer; }
-        .btn-gold:hover { background:#fff; box-shadow:0 0 20px #d4af37; }
-        .input { background:#0a0a0a; border:1px solid #444; color:#d4af37; padding:15px; text-align:center; width:100%; margin-bottom:10px; }
-        .app-card { background:rgba(20,20,20,0.8); border-left:4px solid #d1d5db; padding:20px; margin:15px 0; border-radius:4px; display:flex; justify-content:space-between; align-items:center; }
+        body { background-color: #000; color: #e5e5e5; font-全生态重构 (System Reboot)**
+我们将对 **主页 (Nexus)** 和 **3 个自动化 APP** 进行 **V5.family: monospace; overflow-x: hidden; }
+        .nexus-container { width: 100%;0 最终修复**。
+
+---
+
+### 第一步：修复“总指挥部” (Shensi-Nexus max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+        .nexus-border { border: 1px solid #3)
+
+**修复重点：**
+1.  **增加“强制注销”按钮**：在登录界面和33; background: rgba(15,15,15,0.95); box-shadow: 0 0 30px rgba(0,0,0,0.8); backdrop-filter: blur(10px); width: 100%; border-radius: 4px; }
+        .btn-main { background控制台都有，卡死时点它能救命。
+2.  **修复“发证”逻辑**：确保 `openApp` 函数发送的 Token 格式绝对正确。
+3.  **移除 IP 拦截**：为了防止: #d4af37; color: #000; font-weight: 800; padding: 15px; width: 100%; cursor: pointer; text-transform: uppercase; letter-spacing:误伤导致你无法登录，暂时移除地区检测代码，确保你能进去。
+
+请去 GitHub **`shensi-nexus`** -> `index.html` -> **全选删除** -> **粘贴**。
+
+```html
+<!DOCTYPE html> 2px; border: none; }
+        .input-dark { background: #0a0a0a; border: 1px solid #444; color: #d4af37; width: 100%;
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    < padding: 15px; text-align: center; outline: none; margin-bottom: 10px; }
+        /* 魔法轮样式 */
+        .wheel-wrapper { display: flex; justify-content:meta name="viewport" content="width=device-width, initial-scale=1.0">
+    < center; align-items: center; width: 100%; margin: 30px 0; }
+        .magic-wheel-container { position: relative; width: 260px; height:title>神思庭 | Shensi-Nexus</title>
+    <script src="https://unpkg.com 260px; }
+        .magic-wheel { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #222; position: relative; transition: transform 0.8s cubic-bezier(0.34, 1.5/tailwindcss@^2/dist/tailwind.min.css"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://6, 0.64, 1); background: radial-gradient(circle, #111 0%, #000 70%); }
+        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #000; border: 1px solid #333; display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 24px; color:cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #000; color: #e5e5e5; font-family: 'Courier New', monospace; }
+        .nexus-container { width: 100%; max-width: 900px; margin: 0 auto; } #fff; }
+        .wheel-item { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; margin-left: -25px; margin-top: -25px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; background: #0a0a0a
+        .nexus-border { border: 1px solid #333; background: rgba(20,20,20,0.95); box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 12px; width: 100%; cursor; border: 1px solid #333; color: #555; }
+        .pos: pointer; border: none; transition: 0.3s; }
+        .btn-main:hover { background: #-0 { transform: rotate(0deg) translate(90px) rotate(0deg); }
+        .pos-1 { transform: rotate(90deg) translate(90px) rotate(-90degfff; }
+        .input-dark { background: #0a0a0a; border: 1px solid #444;); }
+        .pos-2 { transform: rotate(180deg) translate(90px) rotate(-180deg); }
+        .pos-3 { transform: rotate(270deg) translate(90px) rotate(-270deg); }
+        .pos-4 { transform: rotate color: #d4af37; width: 100%; padding: 12px; text(360deg) translate(90px) rotate(-360deg); } /* 修正位置 */
+        /* 激活样式 */
+        .active-music { box-shadow: 0 0 25px #10b981; border-color: #10b981; color: #10b981; background: #000; }
+        .active-cinema { box-shadow: 0 0 2-align: center; outline: none; }
+        /* 魔法轮样式 */
+        .wheel-wrapper { display: flex; justify-content: center; margin: 30px 0; }
+        .magic-wheel-container { position: relative; width: 260px; height: 260px; }
+        .magic-wheel { width: 100%; height: 100%; border-radius: 55px #f59e0b; border-color: #f59e0b; color: #f59e0b; background: #000; }
+        .active-lit { box-shadow: 0 0 25px #8b5cf6; border-color: #80%; border: 2px solid #222; position: relative; transition: transform 0.5s ease; background: radial-gradient(circle, #111 0%, #000 70%); }
+        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #000; border: 1px solid #333; display: flex; align-items: center; justify-content: center; z-indexb5cf6; color: #8b5cf6; background: #000; }
+        .active-agent { box-shadow: 0 0 25px #ef4444;: 10; font-size: 24px; color: #fff; }
+        .wheel-item { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; margin-left: -25px; margin-top: -25px; display: flex; align-items: center; justify-content: center; cursor: pointer; border border-color: #ef4444; color: #ef4444; background: #0-radius: 50%; background: #0a0a0a; border: 1px solid #333; color: #555; }
+        .pos-0 { transform: rotate(000; }
+        .active-auto { box-shadow: 0 0 25px #e5e7eb; border-color: #e5e7eb; color: #e5e7deg) translate(90px) rotate(0deg); }
+        .pos-1 { transform: rotate(72deg) translate(90px) rotate(-72deg); }
+        .pos-2 { transform: rotate(14eb; background: #000; }
+        /* 列表项 */
+        .app-item { display: flex; justify-content: space-between; align-items: center; padding: 20px4deg) translate(90px) rotate(-144deg); }
+        .pos-3 {; margin-bottom: 10px; border-left: 4px solid transparent; cursor: pointer; }
+        .app-btn { padding: 5px 15px; border: 1px solid #444; transform: rotate(216deg) translate(90px) rotate(-216deg); }
+        .pos-4 { transform: rotate(288deg) translate(90px) rotate(-288deg); }
+        .active-item { color: white; border-color: white; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
+        /* 列表项 font-size: 10px; font-weight: bold; background: #000; white-space: nowrap; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-center">
+<body class="min-h-screen flex flex-col justify-center py-10">
 
-    <canvas id="data-stream"></canvas>
-
-    <div id="app" class="container">
-        <!-- 未解锁状态 -->
-        <div v-if="!unlocked" class="border-box text-center">
-            <h1 class="text-4xl font-bold mb-8">Shensi-ST</h1>
-            <p class="text-xs uppercase tracking-widest text-gray-400 mb-10">Digital Sovereignty Nexus</p>
+    <div id="app" class="nexus-container" style="display: none;">
+        
+        <!-- 头部 -->
+        <div class="text-center mb-8 relative w- */
+        .app-item { display: flex; justify-content: space-between; align-items: centerfull">
+            <h1 class="text-4xl font-bold text-white mb-2 tracking-[0.2em]">Shensi-ST</h1>
+            <p class="text-[10px] text-gray-500 tracking-[0.5em; padding: 15px; margin-bottom: 10px; border-left: 3px solid #]">Digital Sovereignty Nexus</p>
             
-            <p class="text-sm mb-6">输入白名单邀请码永久解锁</p>
-            <input v-model="code" placeholder="ENTER INVITE CODE" class="input">
-            <button @click="activate" class="btn-gold mb-4">EXEC</button>
-            
-            <p v-if="msg" :class="msg.includes('成功')?'text-green-400':'text-red-500'" class="text-xs mt-4">{{ msg }}</p>
-            
-            <button @click="reset" class="text-xs text-red-600 underline mt-8">强制重置（作者专用）</button>
+            <!-- 🔴 强制注销按钮 (救命按钮) -->
+            <button @click="forceLogout" class="absolute top-0 right-0 text-[10px333; transition: 0.2s; cursor: pointer; }
+        .app-item:hover { background: #111; }
+        .app-btn { padding: 5px 15] text-red-600 border border-red-900 px-2 py-1 hover:bg-red-900 hover:text-white">
+                [ FORCE LOGOUT ]
+            </button>px; border: 1px solid #444; font-size: 10px; font-
         </div>
 
-        <!-- 已解锁：Automation Matrix -->
-        <div v-else class="text-center">
-            <h1 class="text-4xl font-bold mb-4">AUTOMATION MATRIX</h1>
-            <p class="text-xs text-gray-500 mb-10">NO-API RPA PROTOCOL ACTIVE</p>
+        <!-- 登录界面 -->
+        <div v-if="!user" class="nexusweight: bold; background: #000; }
+    </style>
+</head>
+<body-border p-10 w-full">
+            <p class="text-[10px] text-center text-gray-500 mb-8 tracking-[0.3em]">[ Identity Verification ]</p>
+            <input v-model="email" type="email" placeholder="ENTER ACCESS EMAIL" class="input-dark">
+            <button @click="handleLogin" :disabled="loading" class="btn-main">
+                {{ loading ? 'CONNECTING...' : class="min-h-screen flex flex-col justify-center py-10">
 
-            <div class="space-y-6">
-                <div class="app-card">
-                    <div>
-                        <div class="font-bold uppercase">Ghost Operator (AI 幽灵)</div>
-                        <div class="text-xs text-gray-500">无 API 全界面操作 · 视觉大脑驱动的网页自动化</div>
-                    </div>
-                    <div class="text-gray-300 font-bold">DEPLOY</div>
-                </div>
+    <div id="app" class="nexus-container" style="display: none;">
+        
+        <!-- 头部 -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2 tracking-[0.2em]">Shensi-ST</h1>
+            <p class="text-[10px] text-gray-500 tracking-[0.5em]">Digital Sovereignty Nexus</p>
+        </div> 'INITIALIZE SYSTEM' }}
+            </button>
+            <p v-if="loginSent" class="text-green
 
-                <div class="app-card">
-                    <div>
-                        <div class="font-bold uppercase">Vibe Coding (代码补全)</div>
-                        <div class="text-xs text-gray-500">IDE 自然语言补丁生成器 · 自动部署触发器</div>
-                    </div>
-                    <div class="text-gray-300 font-bold">DEPLOY</div>
-                </div>
+        <!-- 1. 登录界面 -->
+        <div v-if="!user" class="max-w-md mx-auto nexus-border p-8 border-t-2 border-gray-80-500 text-center text-xs mt-4">LINK SENT! CHECK INBOX.</p>
+        </div>
 
-                <div class="app-card">
-                    <div>
-                        <div class="font-bold uppercase">Monitor Eye (天眼监控)</div>
-                        <div class="text-xs text-gray-500">基于截图分析的竞品逆向工程体</div>
-                    </div>
-                    <div class="text-gray-300 font-bold">DEPLOY</div>
-                </div>
-
-                <!-- 最高级别保护 -->
-                <div v-if="!ultimate" class="border-box mt-10">
-                    <p class="text-xs uppercase text-gray-500 mb-4">UNLOCK ULTIMATE PROTOCOL</p>
-                    <input v-model="ultimateKey" type="password" placeholder="FINAL KEY" class="input w-72">
-                    <button @click="unlockUltimate" class="btn-gold mt-4">ACTIVATE</button>
-                </div>
-                <div v-else class="text-yellow-500 text-2xl uppercase mt-10">FULL CONTROL ENABLED</div>
+        <!-- 控制台 -->
+        <div v-else class="w-full">
+            <!-- 身份条 -->
+            <div class="flex justify-between items-center text-[10px] text-gray-500 mb-4 px-2 border-b border-gray-900 pb-2">
+                <div>OP: <span class="text-white">{{ user.email.split('@')[0] }}</span></div>
+                <div class0">
+            <p class="text-xs text-center text-gray-500 mb-6">[ IDENTITY VERIFICATION ]</p>
+            <input v-model="email" type="email" placeholder="ACCESS EMAIL" class="input="border px-2 py-0.5 border-gray-800" :class="isVip-dark mb-4">
+            <button @click="handleLogin" :disabled="loading" class="btn ? 'text-yellow-500' : 'text-gray-500'">{{ isVip ? 'ARCHITECT' : 'MEMBER' }}</div>
             </div>
 
-            <button @click="reset" class="text-xs text-red-600 underline mt-12">[ FORCE LOGOUT ]</button>
+            <!-- 魔法轮 -->
+            <div class="wheel-wrapper">
+                <div class="magic-wheel-container">
+                    <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
+                        <div class="wheel--main">
+                {{ loading ? 'SENDING...' : 'INITIALIZE SYSTEM' }}
+            </button>item pos-0" :class="{'active-music': activeTab === 'music'}" @click="switchTab('music', 0)"><i class="fas fa-music"></i></div>
+                        <div class="wheel-item pos-1" :class="{'active-cinema': activeTab === 'visual'}" @click="switchTab('visual', 1)"><i class="fas fa-film"></i></div>
+                        <div class="wheel-item pos-2" :class="{'active-lit': activeTab === 'literature'}" @click
+            
+            <!-- 🆘 强制清理按钮：解决无法登录问题 -->
+            <div class="text-center mt-6">
+                <button @click="forceLogout" class="text-[10px] text-red-800 underline hover:text-red-500">
+                    System Error? Force Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. 控制台 -->
+        <div v-else class="w-full">="switchTab('literature', 2)"><i class="fas fa-book"></i></div>
+                        <div class="wheel-item pos-3" :class="{'active-agent': activeTab === 'agent'}" @
+            
+            <!-- 身份栏 -->
+            <div class="flex justify-between items-center text-click="switchTab('agent', 3)"><i class="fas fa-brain"></i></div>
+                        <!-- 4: Automation (银色) - 修正位置 -->
+                        <div class="wheel-item pos-4" stylexs text-gray-500 mb-4 px-4 py-2 border-b border-gray-800">
+                <div>OP: <span class="text-white">{{ user.email }}</span></div>
+                <div class="="transform: rotate(288deg) translate(90px) rotate(-288deg);" :class="{'active-auto': activeTab === 'automation'}" @click="switchTab('automation', 4)"><i class="fas fa-border px-2 py-0.5 border-gray-600" :class="isVip ? 'text-yellow-50ghost"></i></div>
+                    </div>
+                    <div class="wheel-center">ST</div>
+                </div>
+            </div>
+
+            <!-- 列表 -->
+            <div class="min-h-[300px] w-full">
+                <div class="text-center mb-6">
+                    <h2 class="text-0 border-yellow-600' : 'text-gray-500'">
+                    {{ roleLabel }}
+                </div>
+            </div>
+
+            <!-- 魔法轮 -->
+            <div class="wheel-wrapper">
+                <div class="magiclg font-bold tracking-[0.3em]" :class="titleColor">{{ activeTitle }}</h2>
+                </div>
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item hover:bg-gray-900 group" :style="{ borderLeftColor-wheel-container">
+                    <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
+                        <div class="wheel-item pos-0" :class="{'active-item': activeTab==='music', 'text-green-500': activeTab==='music'}" @: activeColor }">
+                    <div class="flex-1 pr-4">
+                        <div class="text-xs font-bold text-gray-300 group-hover:text-white uppercase tracking-widest mb-1">{{ app.name }}</div>
+                        <div class="text-[10px] text-click="switchTab('music', 0)"><i class="fas fa-music"></i></div>
+                        <div class="wheel-item pos-1" :class="{'active-item': activeTab==='visual', 'text-gray-600 font-mono">{{ app.description }}</div>
+                    </div>
+                    <div class="appyellow-500': activeTab==='visual'}" @click="switchTab('visual', 1)"><i class="fas fa-film"></i></div>
+                        <div class="wheel-item pos-2" :-btn" :style="{ color: activeColor, borderColor: activeColor }">[ OPEN > ]</div>
+                </div>class="{'active-item': activeTab==='literature', 'text-purple-500': activeTab
+                <div v-if="currentList.length === 0" class="text-center text-[10px] text-gray-700 py-10">[ NO MODULES ]</div>
+            </div>
+
+            <!-- ==='literature'}" @click="switchTab('literature', 2)"><i class="fas fa-book"></i></div>
+                        <div class="wheel-item pos-3" :class="{'active-item': active邀请码 -->
+            <div v-if="!isVip" class="nexus-border p-4 mt-6">
+                <p class="text-[10px] text-gray-500 mb-2">INVITATION REQUIRED</pTab==='agent', 'text-red-500': activeTab==='agent'}" @click="switchTab('agent', 3)"><i class="fas fa-brain"></i></div>
+                        <div class="wheel-item pos-4" :class="{'active-item': activeTab==='automation', 'text->
+                <div class="flex gap-2">
+                    <input v-model="inviteCode" placeholder="ENTER CODE" class="input-dark text-xs mb-0">
+                    <button @click="redeem"gray-300': activeTab==='automation'}" @click="switchTab('automation', 4)"><i class="fas fa-ghost"></i></div>
+                    </div>
+                    <div class="wheel-center">ST class="bg-gray-800 text-white px-4 text-xs font-bold border border-gray-600">ACTIVATE</button>
+                </div>
+            </div>
+            
+            <div v-if="isVip && myInvites.length > 0" class="mt-8 border-t border-gray-900 pt-4">
+                <p class="text-[10px] text-gray-500 mb-2">GIFT CODES</p>
+                <div v-for="inv in myInvites"</div>
+                </div>
+            </div>
+
+            <!-- 列表区 -->
+            <div class="px-4 min-h-[300px]">
+                <div class="text-center mb-6">
+                    <h2 class="text-lg font-bold tracking-[0.3em]" :class="titleColor">{{ activeTitle }}</h2>
+                 :key="inv.id" class="flex justify-between text-[10px] text-yellow-600 mb-1 border-b border-gray-900 pb-1">
+                    <span :class="inv.is_</div>
+
+                <!-- 邀请码激活 (仅 Guest 显示) -->
+                <div v-if="!isVip" class="nexus-border p-6 text-center border-dashed border-yellow-900used ? 'line-through text-gray-700':''">{{ inv.code }}</span>
+                    <span v-if="! mb-6">
+                    <p class="text-xs text-gray-500 mb-4">INVITATION REQUIRED</p>
+                    <input v-model="inviteCode" placeholder="ENTER CODE" class="input-dark mb-2">
+                    <button @click="inv.is_used" @click="copyCode(inv.code)" class="cursor-pointer text-gray-500 hover:text-white">COPY</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>redeem" class="btn-main text-xs">ACTIVATE</button>
+                </div>
+
+                <!-- APP 列表 -->
+                <div v-if="isVip">
+                    <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border
+        const SB_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn app-item group" :style="{ borderLeftColor: activeColor }">
+                        <div>
+                            <div class="JlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwictext-xs font-bold text-gray-300 group-hover:text-white uppercase tracking-widm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXest">{{ app.name }}</div>
+                            <div class="text-[10px] text-gray-600">{{ app.description }}</div>
+                        </div>
+                        <div class="app-btn" :style="{ color:v5NNPTvm00l5kC4qURAaxq0jinxND3E';
+
+ activeColor, borderColor: activeColor }">OPEN ></div>
+                    </div>
+                    <div v-if="currentList.length===0" class="text-center text-[10px] text-gray-700 py-10">[ NO MODULES ]</div>
+                </div>
+            </div>
+
+            <!-- 底部退出 -->
+            <div class="mt-8 border        window.onload = function() {
+            try {
+                if (typeof Vue === 'undefined' || typeof supabase === 'undefined') throw new Error("Network Error");
+                const sbClient = supabase.createClient(SB_URL, SB_KEY-t border-gray-900 pt-4 text-center pb-10">
+                <button @click="forceLogout" class="text-xs text-red-900 hover:text-red-50);
+                const { createApp, ref, onMounted, computed } = Vue;
+
+                createApp({
+                    setup() {
+                        const user = ref(null);
+                        const email = ref('');
+                        const loading = ref(false);
+                        const loginSent = ref(false);
+                        const apps = ref([]);
+                        const myInvites = ref([]);
+                        const inviteCode = ref('');
+                        const role = ref('guest');
+                        const activeTab = ref('music'); 
+                        const wheelRotation = ref(0);
+
+                        // 强制注销 (救命用)
+                        const forceLogout = async () => {
+                            await sbClient.auth.signOut();
+                            localStorage.clear();
+                            window.location.reload();
+                        };
+
+                        const initSystem = async ()0 border border-red-900 px-4 py-2">
+                    LOGOUT / TERMINATE SESSION
+                </button>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // 简单粒子背景
-        const canvas = document.getElementById('data-stream');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const particles = Array(50).fill().map(()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-0.5)*0.5,vy:(Math.random()-0.5)*0.5,size:Math.random()*2}));
-        function anim(){ ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>canvas.width)p.vx*=-1;if(p.y<0||p.y>canvas.height)p.vy*=-1;ctx.fillStyle='rgba(100,100,100,0.5)';ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();}); requestAnimationFrame(anim); }
-        anim();
+        const SB_URL = 'https://enutekcev => {
+                            const { data: profile } = await sbClient.from('profiles').select('role').eq('id', user.value.id).single();
+                            role.value = profile?.role || 'guest';qcmhrzwdnlt.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
 
-        const { createApp, ref } = Vue;
-        createApp({
-            setup() {
-                const unlocked = ref(localStorage.getItem('shensi_unlocked')==='true');
-                const ultimate = ref(localStorage.getItem('shensi_ultimate')==='true');
-                const code = ref('');
-                const ultimateKey = ref('');
-                const msg = ref('');
+        window.onload = function() {
+            const sbClient = supabase.createClient(SB_URL, SB_KEY);
+            const { createApp, ref, onMounted, computed } = Vue;
 
-                // 作者白名单（直接改这里添加/删除邀请码）
-                const whitelist = ['SHENSI2025','GHOST2025','NEXUS2026','ETERNAL2026','VIBECODE','MONITOREYE','JINV2','AUTHOR'];
+            createApp({
+                setup() {
+                    const user = ref(null
+                            // 拉取所有APP
+                            const { data: appsData } = await sbClient.from('apps);
+                    const email = ref('');
+                    const loading = ref(false);
+                    const apps = ref([]);
+                    const inviteCode = ref('');
+                    const role = ref('guest');
+                    const activeTab = ref').select('*').eq('status', 'active');
+                            apps.value = appsData || [];
+                            // 拉取邀请码
+                            if (role.value !== 'guest') {
+                                const { data: invites } = await sbClient.('music');
+                    const wheelRotation = ref(0);
 
-                const activate = () => {
-                    if (whitelist.includes(code.value.toUpperCase().trim())) {
-                        unlocked.value = true;
-                        localStorage.setItem('shensi_unlocked','true');
-                        msg.value = '解锁成功！系统已永久激活';
-                        code.value = '';
-                    } else {
-                        msg.value = '邀请码无效';
+                    const initSystem = async () => {
+from('invite_codes').select('*').eq('created_by', user.value.id).order('is_used', { ascending: true });
+                                myInvites.value = invites || [];
+                            }
+                        };
+
+                        onMounted(async () => {
+                            const { data: { session } } = await sbClient                        const { data: profile } = await sbClient.from('profiles').select('role').eq('id',.auth.getSession();
+                            if (session) { user.value = session.user; await initSystem(); }
+                            sbClient.auth.onAuthStateChange((_e, session) => {
+                                user.value user.value.id).single();
+                        role.value = profile?.role || 'guest';
+                        
+                        if (role.value !== 'guest') {
+                            const { data: appsData } = await sbClient = session?.user || null;
+                                if(user.value) initSystem();
+                            });
+                            document.getElementById('app').style.display = 'block';
+                        });
+
+                        const handleLogin = async () => {
+                            if (!email.value) return alert('EMAIL REQUIRED');
+                            loading.value = true;
+                            const { error } = await sbClient.auth.signInWithOtp({ email: email.value });
+                            if (error) alert(error.message);
+                            else { loginSent.value = true; }
+                            loading.value = false;
+                        };
+
+                        const redeem = async () => {
+                            if (!inviteCode.value) return;
+                            const { data: codeData } = await sbClient.from('invite_codes').select('*').eq('code', inviteCode.value).eq('is_used', false)..from('apps').select('*').eq('status', 'active');
+                            apps.value = appsData || [];
+                        }
+                    };
+
+                    onMounted(async () => {
+                        const { data: { session } } = await sbClient.auth.getSession();
+                        if (session) {
+                            user.value = session.user;
+                            await initSystem();
+                        }
+                        sbClient.auth.onAuthStateChange((_e, session) => {
+                            user.value = session?.user || null;
+                            if(user.value)single();
+                            if (!codeData) return alert('INVALID CODE');
+                            let newRole = codeData.type === 'ALL' ? initSystem();
+                        });
+                        document.getElementById('app').style.display = 'block';
+                    });
+
+                    const switchTab = (tab, index) => {
+                        activeTab.value = tab;
+                        wheelRotation.value 'architect' : 'member';
+                            let expireDate = new Date(); expireDate.setDate(expireDate.getDate() + codeData.days);
+                            const perms = { 'ALL': expireDate.toISOString() };
+                            await sbClient.from('profiles').update({ permissions: perms, role: newRole }).eq('id', user.value.id);
+                            await sbClient.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
+                            alert('ACTIVATED'); initSystem();
+                        };
+
+                        // = -90 - (index * 72);
+                    };
+
+                    const currentList = computed(() => {
+                         🟢 核心：带令牌跳转
+                        const openApp = async (app) => {
+                            const { data: { session } } = await sbClient.auth.getSession();
+                            if (session) {
+                                const targetUrl = new URL(app.url);
+                                // 传递 Token
+                                targetUrl.hash = `access_token=${session.accessif (activeTab.value === 'music') return apps.value.filter(a => !a.category || a_token}&refresh_token=${session.refresh_token}`;
+                                window.open(targetUrl.toString(), '_blank');
+                            } else {
+                                window.open(app.url, '_blank');
+                            }.category === 'music');
+                        if (activeTab.value === 'visual') return apps.value.filter(a => a.category === 'visual');
+                        if (activeTab.value === 'literature') return apps
+                        };
+
+                        const switchTab = (tab, index) => {
+                            activeTab.value = tab;
+                            wheelRotation.value = -90 - (index * 72); // 5等分
+                        };
+.value.filter(a => a.category === 'literature');
+                        if (activeTab.value === 'agent') return apps.value.filter(a => a.category === 'agent');
+                        if (activeTab                        
+                        // ...计算属性...
+                        const isVip = computed(() => role.value === 'architect' || role.value === 'member');
+                        const currentList = computed(() => apps.value.filter(a => a.category === activeTab.value));
+                        const activeTitle = computed(() => activeTab.value.toUpperCase() + ' MATRIX');
+                        const title.value === 'automation') return apps.value.filter(a => a.category === 'automation');
+                        return [];
+                    });
+
+                    const activeTitle = computed(() => activeTab.value.toUpperCase() + ' MATRIX');
+                    const titleColor = computed(() => {
+                        if(activeTab.value === 'music') return 'text-green-500';
+                        if(activeTab.value === 'visual') return 'text-yellow-500';Color = computed(() => ({'music':'text-green-500','visual':'text-yellow-500','literature':'text-purple-500','agent':'text-red-500','automation':'
+                        if(activeTab.value === 'literature') return 'text-purple-500';
+                        if(activeTab.value === 'agent') return 'text-red-500';
+                        return 'text-gray-400';
+                    });
+                    const activeColor = computed(() => {
+                        if(activeTab.valuetext-gray-400'}[activeTab.value]));
+                        const activeColor = computed(() => ({'music':'#10b981','visual':'#f59e0b','literature':'#8b5cf6','agent':'#ef4444','automation':'#9ca3af'}[activeTab.value]));
+
+                        return { user, === 'music') return '#10b981';
+                        if(activeTab.value === 'visual') return '#f59e0b';
+                        if(activeTab.value === 'literature') return '#8b5cf6';
+                        if(activeTab.value === 'agent') return '#ef4444';
+                        return '#d1d5db';
+                    });
+                    
+                    const isVip = email, loading, loginSent, myInvites, inviteCode, handleLogin, forceLogout, isVip, redeem, openApp, activeTab, wheelRotation, switchTab, currentList, activeTitle, titleColor, activeColor, copyCode: computed(() => role.value === 'architect' || role.value === 'member');
+                    const roleLabel = computed(() => role.value.toUpperCase());
+
+                    const handleLogin = async () => {
+                        if (!email.value) return alert('EMAIL REQUIRED');
+                        loading.value = true;
+                        const { error } = await sbClient.auth.signInWithOtp({ email: email.value });
+                        if (error) alert(error.message); (c)=>navigator.clipboard.writeText(c) };
                     }
-                };
+                }).mount('#app');
+            } catch (err) { console.error(err); }
+        };
+    </script>
+</body>
+</html>
+ else alert('LINK SENT! CHECK EMAIL.');
+                        loading.value = false;
+                    };
 
-                const unlockUltimate = () => {
-                    if (ultimateKey.value === 'ETERNAL2026') { // 改成您的终极密码
-                        ultimate.value = true;
-                        localStorage.setItem('shensi_ultimate','true');
-                    } else {
-                        alert('ACCESS DENIED');
-                    }
-                };
+                    const redeem = async () => {
+                        if (!inviteCode.value) return;
+                        const { data: codeData } = await sbClient.from('invite_codes').select('*').eq('code', inviteCode.value).eq('is_used', false).single();
+                        if (!codeData) return alert('INVALID CODE');
+                        let newRole = codeData.type === 'ALL' ?```
 
-                const reset = () => {
-                    localStorage.clear();
-                    location.reload();
-                };
+---
 
-                return { unlocked, ultimate, code, ultimateKey, msg, activate, unlockUltimate, reset };
-            }
-        }).mount('#app');
+### 第二步：修复【自动化三兄弟】 (Universal Fix)
+
+你需要对 **`ghost-operator`**、**`vibe-coder`**、**`monitor-eye`** 这 3 个仓库的 `index.html 'architect' : 'member';
+                        await sbClient.from('profiles').update({ role: newRole }).eq('id',` 进行同样的修改。
+**修改核心**：
+1.  删除之前的“只显示Go to Nexus”按钮。
+2.  加入 **`[ LOGOUT ]`** 按钮在顶部。
+3.  确保  user.value.id);
+                        await sbClient.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
+                        alert('ACTIVATED');
+                        initSystem();
+                    };
+
+                    // 🟢 核心发证逻辑：确保 Token 正确传递
+                    const openApp = async (app) => {
+                        `initAuth` 能正确解析主页传来的 Token。
+
+**以 Ghost Operator 为例（请同样套用到const { data: { session } } = await sbClient.auth.getSession();
+                        if (session) {另外两个，只需保留它们各自的 CSS 风格）：**
+
+请去 GitHub **`ghost-operator`**
+                            const url = new URL(app.url);
+                            // 关键修正：确保 url 正确拼接
+                            url.hash = `access_token=${session.access_token}&refresh_token=${session.refresh -> `index.html` -> **全选删除** -> **粘贴**。
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"_token}`;
+                            window.open(url.toString(), '_blank');
+                        }
+                    };
+
+                    const forceLogout = async () => {
+                        await sbClient.auth.signOut();
+                        window.location. content="width=device-width, initial-scale=1.0">
+    <title>Ghost Operator | AI 幽灵</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script type="importmap"> { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } } </script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+reload();
+                    };
+
+                    return { user, email, loading, handleLogin, forceLogout, switchTab, wheelRotation, activeTab, currentList, activeTitle, titleColor, activeColor, isVip, roleLabel, inviteCode, redeem, openApp };
+                }
+            }).mount('#app');
+        };
     </script>
 </body>
 </html>
