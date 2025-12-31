@@ -3,141 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Eye | 天眼监控</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>神思庭 | Shensi-Nexus</title>
+    <script src="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script type="importmap"> { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } } </script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background: #000; color: #10b981; font-family: 'Share Tech Mono', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        body { background-color: #000; color: #e5e5e5; font-family: monospace; overflow-x: hidden; }
+        .nexus-container { width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+        .nexus-border { border: 1px solid #333; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); width: 100%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 15px; width: 100%; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-main:hover { background: #fff; }
+        .input-dark { background: #0a0a0a; border: 1px solid #444; color: #d4af37; width: 100%; padding: 15px; text-align: center; outline: none; margin-bottom: 10px; }
         
-        /* 玻璃墙 */
-        #glass-wall { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; }
-        .lock-card { border: 1px solid #10b981; padding: 40px; text-align: center; background: #001100; box-shadow: 0 0 30px rgba(16, 185, 129, 0.2); }
-        .btn-green { background: #064e3b; color: #fff; border: 1px solid #10b981; padding: 10px 30px; margin-top: 20px; display: inline-block; text-decoration: none; cursor: pointer; }
-        .btn-green:hover { background: #10b981; color: #000; }
+        /* 魔法轮 */
+        .wheel-wrapper { display: flex; justify-content: center; margin: 30px 0; }
+        .magic-wheel-container { position: relative; width: 260px; height: 260px; }
+        .magic-wheel { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #222; position: relative; transition: transform 0.6s ease; background: radial-gradient(circle, #111 0%, #000 70%); }
+        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #000; border: 1px solid #333; display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 24px; color: #fff; }
+        .wheel-item { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; margin-left: -25px; margin-top: -25px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; background: #0a0a0a; border: 1px solid #333; color: #555; }
+        
+        .pos-0 { transform: rotate(0deg) translate(90px) rotate(0deg); }
+        .pos-1 { transform: rotate(72deg) translate(90px) rotate(-72deg); }
+        .pos-2 { transform: rotate(144deg) translate(90px) rotate(-144deg); }
+        .pos-3 { transform: rotate(216deg) translate(90px) rotate(-216deg); }
+        .pos-4 { transform: rotate(288deg) translate(90px) rotate(-288deg); }
 
-        .monitor-grid { display: grid; grid-template-columns: 1fr 1fr; flex: 1; gap: 2px; background: #064e3b; }
-        .cam-view { background: #000; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .cam-overlay { position: absolute; top: 10px; left: 10px; background: #000; padding: 2px 5px; font-size: 12px; }
+        .active-item { color: white; border-color: white; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
+        .app-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; margin-bottom: 10px; border-left: 3px solid transparent; transition: 0.2s; cursor: pointer; }
+        .app-item:hover { background: #222; }
     </style>
 </head>
-<body>
-    
-    <!-- 🛡️ 玻璃墙 -->
-    <div id="glass-wall">
-        <div class="lock-card">
-            <h2 class="text-2xl mb-4">SURVEILLANCE LOCKED</h2>
-            <p class="text-xs opacity-70">AUTHORIZATION REQUIRED</p>
-            <a href="https://shensi-nexus.vercel.app" class="btn-green">ACCESS HUB</a>
+<body class="min-h-screen flex flex-col justify-center py-10">
+
+    <div id="app" class="nexus-container" style="display: none;">
+        <!-- 头部 -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2 tracking-[0.2em]">Shensi-ST</h1>
+            <p class="text-[10px] text-gray-500 tracking-[0.5em]">Digital Sovereignty Nexus</p>
+        </div>
+
+        <!-- 登录 -->
+        <div v-if="!user" class="nexus-border p-8">
+            <p class="text-xs text-center text-gray-500 mb-6">LOGIN TO ACCESS MATRIX</p>
+            <input v-model="email" type="email" placeholder="EMAIL ADDRESS" class="input-dark">
+            <button @click="handleLogin" :disabled="loading" class="btn-main">{{ loading ? 'SENDING...' : 'LOGIN' }}</button>
+            <p v-if="msg" class="text-green-500 text-xs text-center mt-4">{{ msg }}</p>
+        </div>
+
+        <!-- 控制台 -->
+        <div v-else class="w-full">
+            <div class="flex justify-between text-xs text-gray-500 mb-4 px-4">
+                <span>{{ user.email }}</span>
+                <span @click="signOut" class="text-red-500 cursor-pointer">LOGOUT</span>
+            </div>
+
+            <!-- 魔法轮 -->
+            <div class="wheel-wrapper">
+                <div class="magic-wheel-container">
+                    <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
+                        <div class="wheel-item pos-0" :class="{'active-item text-green-500': activeTab==='music'}" @click="switchTab('music', 0)"><i class="fas fa-music"></i></div>
+                        <div class="wheel-item pos-1" :class="{'active-item text-yellow-500': activeTab==='visual'}" @click="switchTab('visual', 1)"><i class="fas fa-film"></i></div>
+                        <div class="wheel-item pos-2" :class="{'active-item text-purple-500': activeTab==='literature'}" @click="switchTab('literature', 2)"><i class="fas fa-book"></i></div>
+                        <div class="wheel-item pos-3" :class="{'active-item text-red-500': activeTab==='agent'}" @click="switchTab('agent', 3)"><i class="fas fa-brain"></i></div>
+                        <div class="wheel-item pos-4" :class="{'active-item text-gray-300': activeTab==='automation'}" @click="switchTab('automation', 4)"><i class="fas fa-ghost"></i></div>
+                    </div>
+                    <div class="wheel-center">ST</div>
+                </div>
+            </div>
+
+            <!-- 列表 -->
+            <div class="min-h-[300px]">
+                <h2 class="text-center text-lg font-bold tracking-widest mb-6" :style="{color: activeColor}">{{ activeTab.toUpperCase() }} MATRIX</h2>
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                    <div>
+                        <div class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</div>
+                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
+                    </div>
+                    <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
+                </div>
+                <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
+            </div>
         </div>
     </div>
 
-    <!-- 顶部 -->
-    <div class="h-[50px] border-b border-green-900 flex justify-between items-center px-4 shrink-0 bg-black">
-        <span class="text-lg tracking-widest">MONITOR EYE v1.0</span>
-        <div class="flex gap-4 items-center">
-            <span id="user-status" class="text-xs">CONNECTING...</span>
-            <button onclick="handleLogout()" class="text-xs border border-green-800 px-2 py-1 hover:bg-green-900">[ LOGOUT ]</button>
-        </div>
-    </div>
-
-    <div class="monitor-grid">
-        <div class="cam-view" onclick="document.getElementById('file1').click()">
-            <div class="cam-overlay">CAM 01 (BEFORE)</div>
-            <img id="img1" class="max-h-full max-w-full hidden">
-            <span class="text-xs text-gray-500">CLICK TO UPLOAD</span>
-            <input type="file" id="file1" hidden onchange="loadFile(this, 'img1')">
-        </div>
-        <div class="cam-view" onclick="document.getElementById('file2').click()">
-            <div class="cam-overlay">CAM 02 (AFTER)</div>
-            <img id="img2" class="max-h-full max-w-full hidden">
-            <span class="text-xs text-gray-500">CLICK TO UPLOAD</span>
-            <input type="file" id="file2" hidden onchange="loadFile(this, 'img2')">
-        </div>
-    </div>
-    
-    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2">
-        <button onclick="analyzeDiff()" id="scan-btn" class="bg-green-700 text-white px-8 py-3 rounded font-bold shadow-lg hover:bg-green-600 transition">
-            ANALYZE DIFFERENCE
-        </button>
-    </div>
-
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
+    <script>
         const SB_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
-        const GEMINI_KEY = 'AIzaSyAAilSsHdHTUseTZYxw-Wp0H9dtH-F_zpc'; 
-        const sb = supabase.createClient(SB_URL, SB_KEY);
-        let b64_1 = null, b64_2 = null;
+        
+        window.onload = function() {
+            const sb = supabase.createClient(SB_URL, SB_KEY);
+            const { createApp, ref, computed, onMounted } = Vue;
 
-        // 🟢 核心 SSO 鉴权
-        (async function initAuth() {
-            const hash = window.location.hash;
-            
-            // 1. 检查 URL 令牌 (从主页跳来)
-            if (hash && hash.includes('access_token')) {
-                const params = new URLSearchParams(hash.substring(1));
-                const { data, error } = await sb.auth.setSession({
-                    access_token: params.get('access_token'),
-                    refresh_token: params.get('refresh_token')
-                });
-                if (!error && data.session) {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    unlockUI(data.session.user.email);
-                    return;
+            createApp({
+                setup() {
+                    const user = ref(null);
+                    const email = ref('');
+                    const loading = ref(false);
+                    const msg = ref('');
+                    const apps = ref([]);
+                    const activeTab = ref('music');
+                    const wheelRotation = ref(0);
+
+                    onMounted(async () => {
+                        const { data: { session } } = await sb.auth.getSession();
+                        if (session) user.value = session.user;
+                        
+                        // 不管登没登录，先拉取APP列表 (因为没有邀请码限制了)
+                        const { data } = await sb.from('apps').select('*').eq('status', 'active');
+                        apps.value = data || [];
+                        
+                        sb.auth.onAuthStateChange((_, s) => user.value = s?.user || null);
+                        document.getElementById('app').style.display = 'block';
+                    });
+
+                    const handleLogin = async () => {
+                        loading.value = true;
+                        const { error } = await sb.auth.signInWithOtp({ email: email.value });
+                        if (error) alert(error.message);
+                        else msg.value = "LINK SENT! CHECK INBOX.";
+                        loading.value = false;
+                    };
+
+                    const switchTab = (tab, index) => {
+                        activeTab.value = tab;
+                        wheelRotation.value = -90 - (index * 72);
+                    };
+
+                    const currentList = computed(() => apps.value.filter(a => !a.category || a.category === activeTab.value));
+                    const activeColor = computed(() => ({'music':'#10b981','visual':'#f59e0b','literature':'#8b5cf6','agent':'#ef4444','automation':'#d1d5db'}[activeTab.value]));
+
+                    const openApp = (app) => {
+                        // 依然尝试带Token跳转，方便子APP自动登录
+                        sb.auth.getSession().then(({ data }) => {
+                            if (data.session) {
+                                const url = new URL(app.url);
+                                url.hash = `access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}`;
+                                window.open(url.toString(), '_blank');
+                            } else {
+                                window.open(app.url, '_blank');
+                            }
+                        });
+                    };
+                    const signOut = () => sb.auth.signOut();
+
+                    return { user, email, loading, msg, activeTab, currentList, activeColor, wheelRotation, switchTab, handleLogin, signOut, openApp };
                 }
-            }
-
-            // 2. 检查本地 Session
-            const { data: { session } } = await sb.auth.getSession();
-            if (session) {
-                unlockUI(session.user.email);
-            } else {
-                document.getElementById('user-status').innerText = "LOCKED";
-            }
-        })();
-
-        function unlockUI(email) {
-            document.getElementById('glass-wall').style.display = 'none';
-            document.getElementById('user-status').innerText = "AGENT: " + email;
-        }
-
-        window.handleLogout = async () => {
-            await sb.auth.signOut();
-            window.location.reload();
-        };
-
-        window.loadFile = (input, imgId) => {
-            const file = input.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById(imgId).src = e.target.result;
-                    document.getElementById(imgId).classList.remove('hidden');
-                    if(imgId === 'img1') b64_1 = e.target.result.split(',')[1];
-                    if(imgId === 'img2') b64_2 = e.target.result.split(',')[1];
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        window.analyzeDiff = async () => {
-            if(!b64_1 || !b64_2) return alert("Upload both images");
-            const btn = document.getElementById('scan-btn');
-            btn.innerText = "SCANNING..."; btn.disabled = true;
-            
-            try {
-                const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                const result = await model.generateContent([
-                    "Compare these two UI screenshots. List 3 key changes or differences.",
-                    { inlineData: { data: b64_1, mimeType: "image/jpeg" } },
-                    { inlineData: { data: b64_2, mimeType: "image/jpeg" } }
-                ]);
-                alert(result.response.text());
-            } catch(e) { alert("AI Error: " + e.message); }
-            finally { btn.innerText = "ANALYZE DIFFERENCE"; btn.disabled = false; }
+            }).mount('#app');
         }
     </script>
 </body>
