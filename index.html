@@ -43,7 +43,6 @@
         <div class="wheel-wrapper">
             <div class="magic-wheel-container">
                 <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
-                    <!-- 严格按照原始位置和图标 -->
                     <div class="wheel-item pos-0" :class="{'active-item text-green-500': activeTab==='music'}" @click="switchTab('music', 0)"><i class="fas fa-music"></i></div>
                     <div class="wheel-item pos-1" :class="{'active-item text-yellow-500': activeTab==='visual'}" @click="switchTab('visual', 1)"><i class="fas fa-film"></i></div>
                     <div class="wheel-item pos-2" :class="{'active-item text-purple-500': activeTab==='literature'}" @click="switchTab('literature', 2)"><i class="fas fa-book"></i></div>
@@ -58,13 +57,12 @@
         <div class="w-full">
             <h2 class="text-center text-lg font-bold tracking-widest mb-6" :style="{color: activeColor}">{{ activeTab.toUpperCase() }} MATRIX</h2>
             
-            <!-- 动态渲染应用列表 -->
             <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
                 <div>
                     <div class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</div>
                     <div class="text-[10px] text-gray-600">{{ app.description }}</div>
                 </div>
-                <div class="text-[10px]" :style="{color: activeColor}">{{ app.status === 'ready' ? 'OPEN >' : 'COMING SOON' }}</div>
+                <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
             </div>
             
             <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
@@ -76,51 +74,49 @@
 
         createApp({
             setup() {
-                // 严格按照原始分类和数量
+                // 根据你的GitHub和Vercel项目，构建完整的应用列表
                 const apps = ref([
-                    // ==================== MUSIC MATRIX (5个) ====================
-                    { slug: 'music-1', name: 'Audio Synthesizer', description: 'AI-powered music synthesis engine', category: 'music', url: '#', status: 'dev' },
-                    { slug: 'music-2', name: 'Sound Designer', description: 'Professional audio effects processor', category: 'music', url: '#', status: 'dev' },
-                    { slug: 'music-3', name: 'Rhythm Composer', description: 'Intelligent beat pattern generator', category: 'music', url: '#', status: 'dev' },
-                    { slug: 'music-4', name: 'Music Analyzer', description: 'AI music structure analysis tool', category: 'music', url: '#', status: 'dev' },
-                    { slug: 'music-5', name: 'Audio Mixer Pro', description: 'Multi-track audio mixing studio', category: 'music', url: '#', status: 'dev' },
+                    // ==================== MUSIC MATRIX (音乐相关) ====================
+                    { slug: 'sonic-weaver', name: 'Sonic Weaver', description: 'AI音乐编织与声波生成器', category: 'music', url: 'https://shensi-sonic-weaver.vercel.app/' },
+                    { slug: 'voice-alchemy', name: 'Voice Alchemy', description: 'AI语音合成与音频处理', category: 'music', url: 'https://shensi-voice-alchemy.vercel.app/' },
+                    { slug: 'music-player', name: 'Music Player', description: '高级音乐播放器与音效处理', category: 'music', url: 'https://music-player-v1-one.vercel.app/' },
+                    { slug: 'traditional-music', name: '传统古乐', description: '传统民族音乐创作辅助工具', category: 'music', url: 'https://shensi-traditional-music-pwa.vercel.app/' },
+                    { slug: 'folk-pwa', name: '民族音乐PWA', description: '民族音乐辅助创作PWA应用', category: 'music', url: 'https://shensi-folk-pwa.vercel.app/' },
                     
-                    // ==================== VISUAL MATRIX (5个) ====================
-                    { slug: 'visual-1', name: 'Image Generator', description: 'AI image creation with neural style', category: 'visual', url: '#', status: 'dev' },
-                    { slug: 'visual-2', name: 'Video Editor', description: 'AI-powered video processing suite', category: 'visual', url: '#', status: 'dev' },
-                    { slug: 'visual-3', name: '3D Modeler', description: '3D model generation and rendering', category: 'visual', url: '#', status: 'dev' },
-                    { slug: 'visual-4', name: 'Design Assistant', description: 'UI/UX design automation tool', category: 'visual', url: '#', status: 'dev' },
-                    { slug: 'visual-5', name: 'Visual Analyzer', description: 'Computer vision analysis platform', category: 'visual', url: '#', status: 'dev' },
+                    // ==================== VISUAL MATRIX (视觉相关) ====================
+                    { slug: 'chroma-vision', name: 'Chroma Vision', description: 'AI视觉色彩分析与处理', category: 'visual', url: 'https://chroma-vision-beta.vercel.app/' },
+                    { slug: 'world-genesis', name: 'World Genesis', description: 'AI世界构建与场景生成', category: 'visual', url: 'https://world-genesis.vercel.app/' },
+                    { slug: 'style-alchemist', name: 'Style Alchemist', description: 'AI风格转换与图像处理', category: 'visual', url: 'https://style-alchemist.vercel.app/' },
+                    { slug: 'plot-weaver', name: 'Plot Weaver', description: 'AI剧情编织与故事生成', category: 'visual', url: 'https://plot-weaver-five.vercel.app/' },
+                    { slug: 'persona-forge', name: 'Persona Forge', description: 'AI角色创建与人物设计', category: 'visual', url: 'https://persona-forge-ten.vercel.app/' },
                     
-                    // ==================== LITERATURE MATRIX (5个) ====================
-                    { slug: 'literature-1', name: 'Text Assistant', description: 'AI writing and editing companion', category: 'literature', url: '#', status: 'dev' },
-                    { slug: 'literature-2', name: 'Document Analyzer', description: 'Intelligent document processing', category: 'literature', url: '#', status: 'dev' },
-                    { slug: 'literature-3', name: 'Translation Pro', description: 'Multi-language translation system', category: 'literature', url: '#', status: 'dev' },
-                    { slug: 'literature-4', name: 'Content Generator', description: 'AI content creation assistant', category: 'literature', url: '#', status: 'dev' },
-                    { slug: 'literature-5', name: 'Research Assistant', description: 'Academic research support tool', category: 'literature', url: '#', status: 'dev' },
+                    // ==================== LITERATURE MATRIX (文学相关) ====================
+                    { slug: 'shensi-read', name: 'Shensi Read', description: 'AI阅读助手与文本分析', category: 'literature', url: 'https://shensi-read.vercel.app/' },
+                    { slug: 'vibe-coder', name: 'Vibe Coder', description: 'AI代码生成与补全工具', category: 'literature', url: 'https://vibe-coder.vercel.app/' },
+                    { slug: 'lingua-sync', name: 'Lingua Sync', description: 'AI多语言同步与翻译', category: 'literature', url: 'https://lingua-sync-six.vercel.app/' },
+                    { slug: 'neural-stream', name: 'Neural Stream', description: '神经网络文本流生成', category: 'literature', url: 'https://neural-stream-woad.vercel.app/' },
+                    { slug: 'claritas-terminal', name: 'Claritas Terminal', description: 'AI文本清晰化终端', category: 'literature', url: 'https://claritas-terminal.vercel.app/' },
                     
-                    // ==================== AGENT MATRIX (5个) ====================
-                    { slug: 'agent-1', name: 'AI Agent', description: 'Autonomous task execution system', category: 'agent', url: '#', status: 'dev' },
-                    { slug: 'agent-2', name: 'Data Miner', description: 'Intelligent data collection agent', category: 'agent', url: '#', status: 'dev' },
-                    { slug: 'agent-3', name: 'Workflow Bot', description: 'Automated workflow management', category: 'agent', url: '#', status: 'dev' },
-                    { slug: 'agent-4', name: 'Scheduler Pro', description: 'Intelligent task scheduling', category: 'agent', url: '#', status: 'dev' },
-                    { slug: 'agent-5', name: 'Monitoring Agent', description: 'System monitoring and alerts', category: 'agent', url: '#', status: 'dev' },
+                    // ==================== AGENT MATRIX (智能代理) ====================
+                    { slug: 'agent-zero', name: 'Agent Zero', description: '基础智能代理系统', category: 'agent', url: 'https://agent-zero-five.vercel.app/' },
+                    { slug: 'agent-mirror', name: 'Agent Mirror', description: '镜像反射智能代理', category: 'agent', url: 'https://agent-mirror.vercel.app/' },
+                    { slug: 'agent-scholar', name: 'Agent Scholar', description: '学术研究智能代理', category: 'agent', url: 'https://agent-scholar-xi.vercel.app/' },
+                    { slug: 'agent-trend', name: 'Agent Trend', description: '趋势分析智能代理', category: 'agent', url: 'https://agent-trend.vercel.app/' },
+                    { slug: 'agent-logic', name: 'Agent Logic', description: '逻辑推理智能代理', category: 'agent', url: 'https://agent-logic.vercel.app/' },
+                    { slug: 'agent-strategos', name: 'Agent Strategos', description: '策略制定智能代理', category: 'agent', url: 'https://agent-strategos.vercel.app/' },
                     
-                    // ==================== AUTOMATION MATRIX (6个) ====================
-                    // 已部署的真实应用
-                    { slug: 'ghost-operator', name: 'Ghost Operator', description: 'Automation workflow & AI analysis matrix', category: 'automation', url: 'https://ghost-operator-7e8tt4m7h-jinvbars-projects.vercel.app/', status: 'ready' },
-                    { slug: 'monitor-eye', name: 'Monitor Eye', description: 'AI visual difference analyzer', category: 'automation', url: 'https://monitor-eye.vercel.app/', status: 'ready' },
-                    { slug: 'vibe-coder', name: 'Vibe Coder', description: 'AI code generation & completion', category: 'automation', url: 'https://vibe-coder.vercel.app/', status: 'ready' },
-                    
-                    // 其他自动化应用
-                    { slug: 'auto-4', name: 'Data Extractor', description: 'Automated data extraction tool', category: 'automation', url: '#', status: 'dev' },
-                    { slug: 'auto-5', name: 'Auto Reporter', description: 'Automated report generation', category: 'automation', url: '#', status: 'dev' },
-                    { slug: 'auto-6', name: 'Workflow Engine', description: 'Complex workflow automation', category: 'automation', url: '#', status: 'dev' }
+                    // ==================== AUTOMATION MATRIX (自动化) ====================
+                    { slug: 'ghost-operator', name: 'Ghost Operator', description: '自动化工作流与AI分析矩阵', category: 'automation', url: 'https://ghost-operator.vercel.app/' },
+                    { slug: 'monitor-eye', name: 'Monitor Eye', description: 'AI视觉差异分析器', category: 'automation', url: 'https://monitor-eye.vercel.app/' },
+                    { slug: 'shensi-todo', name: 'Shensi Todo', description: '神思庭极简待办事项PWA', category: 'automation', url: 'https://-shensi-todo-pwa.vercel.app/' },
+                    { slug: 'shensi-rhythm', name: 'Shensi Rhythm', description: '节奏伴奏与音乐生成', category: 'automation', url: 'https://shensi-rhythm-pwa-.vercel.app/' },
+                    { slug: 'shensi-string', name: 'Shensi String', description: '四弦随心PWA音乐工具', category: 'automation', url: 'https://shensi-string-pwa-sixian-suixin-pwa.vercel.app/' },
+                    { slug: 'super-individual', name: 'Super Individual', description: '超个体构建者·Web3身份协议', category: 'automation', url: 'https://super-individual.vercel.app/' }
                 ]);
                 
                 // 保持原始默认值
-                const activeTab = ref('music');  // 原始默认是music
-                const wheelRotation = ref(0);    // 原始默认是0
+                const activeTab = ref('music');
+                const wheelRotation = ref(0);
 
                 const switchTab = (tab, index) => {
                     activeTab.value = tab;
@@ -136,36 +132,35 @@
                     'automation':'#d1d5db'
                 }[activeTab.value]));
 
-                // 🟢 简化的openApp函数
+                // 🟢 直接打开应用（已移除登录验证）
                 const openApp = (app) => {
-                    console.log('Opening app:', app.name);
+                    console.log('Opening:', app.name, 'URL:', app.url);
                     
-                    if (!app.url || app.url === '#') {
-                        // 对于开发中的应用
-                        alert('🚧 This application is under development and will be available soon!');
+                    if (!app.url) {
+                        console.error('App has no URL:', app.name);
                         return;
                     }
                     
                     try {
-                        // 直接打开应用URL（已移除登录验证）
+                        // 直接打开应用，不传递任何token
                         const newWindow = window.open(app.url, '_blank');
                         
                         if (!newWindow) {
                             // 如果弹窗被阻止，尝试在当前页打开
-                            const openInCurrent = confirm(`Open ${app.name} in current tab?\n\n(Popup was blocked by browser)`);
-                            if (openInCurrent) {
+                            const shouldOpen = confirm(`Open "${app.name}" in current tab?\n\n(Popup was blocked by browser)`);
+                            if (shouldOpen) {
                                 window.location.href = app.url;
                             }
                         }
                         
                     } catch (error) {
                         console.error('Error opening app:', error);
-                        alert(`Error: ${error.message}`);
+                        alert(`Error opening ${app.name}:\n${error.message}`);
                     }
                 };
 
                 return { 
-                    user: ref(null),  // 保持与原结构一致
+                    user: ref(null),
                     email: ref(''),
                     loading: ref(false),
                     msg: ref(''),
