@@ -4,66 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>神思庭 | Shensi-Nexus</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #000; color: #e5e5e5; font-family: monospace; }
-        .nexus-container { width: 100%; max-width: 900px; margin: 0 auto; padding: 20px; }
-        .app-card { border: 1px solid #333; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
-        .app-card:hover { background: #111; border-color: #555; }
-        .btn-open { font-size: 12px; font-weight: bold; padding: 5px 10px; border: 1px solid #555; }
-        .active-tab { color: white; border-bottom: 2px solid white; }
-        .tab-btn { margin-right: 20px; padding-bottom: 5px; color: #666; cursor: pointer; }
+        body { background-color: #000; color: #e5e5e5; font-family: monospace; overflow-x: hidden; }
+        .nexus-container { width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+        .nexus-border { border: 1px solid #333; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); width: 100%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 15px; width: 100%; cursor: pointer; border: none; transition: 0.3s; }
+        .input-dark { background: #0a0a0a; border: 1px solid #444; color: #d4af37; width: 100%; padding: 15px; text-align: center; outline: none; margin-bottom: 10px; }
+        
+        /* 魔法轮 */
+        .wheel-wrapper { display: flex; justify-content: center; margin: 30px 0; }
+        .magic-wheel-container { position: relative; width: 260px; height: 260px; }
+        .magic-wheel { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #222; position: relative; transition: transform 0.6s ease; background: radial-gradient(circle, #111 0%, #000 70%); }
+        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; background: #000; border: 1px solid #333; display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 24px; color: #fff; }
+        .wheel-item { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; margin-left: -25px; margin-top: -25px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; background: #0a0a0a; border: 1px solid #333; color: #555; }
+        
+        .pos-0 { transform: rotate(0deg) translate(90px) rotate(0deg); }
+        .pos-1 { transform: rotate(72deg) translate(90px) rotate(-72deg); }
+        .pos-2 { transform: rotate(144deg) translate(90px) rotate(-144deg); }
+        .pos-3 { transform: rotate(216deg) translate(90px) rotate(-216deg); }
+        .pos-4 { transform: rotate(288deg) translate(90px) rotate(-288deg); }
+
+        .active-item { color: white; border-color: white; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
+        .app-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; margin-bottom: 10px; border-left: 3px solid transparent; transition: 0.2s; cursor: pointer; }
+        .app-item:hover { background: #222; }
     </style>
 </head>
-<body class="bg-black text-gray-300 min-h-screen">
+<body class="min-h-screen flex flex-col justify-center py-10">
 
-    <div id="app" class="nexus-container" style="display:none">
+    <div id="app" class="nexus-container" style="display: none;">
         <!-- 头部 -->
-        <div class="text-center mb-10">
+        <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-white mb-2 tracking-[0.2em]">Shensi-ST</h1>
-            <p class="text-xs text-gray-600 tracking-[0.5em]">Digital Sovereignty Nexus</p>
+            <p class="text-[10px] text-gray-500 tracking-[0.5em]">Digital Sovereignty Nexus</p>
         </div>
 
-        <!-- 登录区 -->
-        <div v-if="!user" class="border border-gray-800 p-8 text-center max-w-md mx-auto">
-            <p class="mb-4 text-xs text-gray-500">IDENTITY VERIFICATION</p>
-            <input v-model="email" placeholder="EMAIL" class="bg-black border border-gray-700 p-2 text-center text-white w-full mb-4 outline-none focus:border-white">
-            <button @click="handleLogin" :disabled="loading" class="w-full bg-white text-black font-bold py-2 hover:bg-gray-200">
-                {{ loading ? 'SENDING...' : 'LOGIN' }}
-            </button>
+        <!-- 登录 -->
+        <div v-if="!user" class="nexus-border p-8">
+            <p class="text-xs text-center text-gray-500 mb-6">LOGIN TO ACCESS MATRIX</p>
+            <input v-model="email" type="email" placeholder="EMAIL ADDRESS" class="input-dark">
+            <button @click="handleLogin" :disabled="loading" class="btn-main">{{ loading ? 'SENDING...' : 'LOGIN' }}</button>
+            <p v-if="msg" class="text-green-500 text-xs text-center mt-4">{{ msg }}</p>
         </div>
 
         <!-- 控制台 -->
-        <div v-else>
-            <div class="flex justify-between items-center text-xs text-gray-500 mb-8 border-b border-gray-900 pb-2">
-                <span>OPERATOR: {{ user.email }}</span>
-                <span @click="signOut" class="cursor-pointer hover:text-red-500">[ LOGOUT ]</span>
+        <div v-else class="w-full">
+            <div class="flex justify-between text-xs text-gray-500 mb-4 px-4">
+                <span>{{ user.email }}</span>
+                <span @click="signOut" class="text-red-500 cursor-pointer">LOGOUT</span>
             </div>
 
-            <!-- 分类导航 -->
-            <div class="flex justify-center mb-8 text-xs font-bold uppercase tracking-widest">
-                <span @click="activeTab='music'" class="tab-btn" :class="{'active-tab text-green-500': activeTab==='music'}">Music</span>
-                <span @click="activeTab='visual'" class="tab-btn" :class="{'active-tab text-yellow-500': activeTab==='visual'}">Cinema</span>
-                <span @click="activeTab='literature'" class="tab-btn" :class="{'active-tab text-purple-500': activeTab==='literature'}">Lit</span>
-                <span @click="activeTab='agent'" class="tab-btn" :class="{'active-tab text-red-500': activeTab==='agent'}">Agent</span>
-                <span @click="activeTab='automation'" class="tab-btn" :class="{'active-tab text-gray-300': activeTab==='automation'}">Auto</span>
+            <!-- 魔法轮 -->
+            <div class="wheel-wrapper">
+                <div class="magic-wheel-container">
+                    <div class="magic-wheel" :style="{ transform: `rotate(${wheelRotation}deg)` }">
+                        <div class="wheel-item pos-0" :class="{'active-item text-green-500': activeTab==='music'}" @click="switchTab('music', 0)"><i class="fas fa-music"></i></div>
+                        <div class="wheel-item pos-1" :class="{'active-item text-yellow-500': activeTab==='visual'}" @click="switchTab('visual', 1)"><i class="fas fa-film"></i></div>
+                        <div class="wheel-item pos-2" :class="{'active-item text-purple-500': activeTab==='literature'}" @click="switchTab('literature', 2)"><i class="fas fa-book"></i></div>
+                        <div class="wheel-item pos-3" :class="{'active-item text-red-500': activeTab==='agent'}" @click="switchTab('agent', 3)"><i class="fas fa-brain"></i></div>
+                        <div class="wheel-item pos-4" :class="{'active-item text-gray-300': activeTab==='automation'}" @click="switchTab('automation', 4)"><i class="fas fa-ghost"></i></div>
+                    </div>
+                    <div class="wheel-center">ST</div>
+                </div>
             </div>
 
             <!-- 列表 -->
-            <div class="grid gap-4">
-                <div v-for="app in currentList" :key="app.id" @click="openApp(app)" class="app-card group">
+            <div class="min-h-[300px]">
+                <h2 class="text-center text-lg font-bold tracking-widest mb-6" :style="{color: activeColor}">{{ activeTab.toUpperCase() }} MATRIX</h2>
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
                     <div>
-                        <div class="text-sm font-bold text-white mb-1 group-hover:tracking-widest transition-all">{{ app.name }}</div>
-                        <div class="text-xs text-gray-600 font-mono">{{ app.description }}</div>
+                        <div class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</div>
+                        <div class="text-[10px] text-gray-600">{{ app.description }}</div>
                     </div>
-                    <div class="btn-open" :class="colorClass">OPEN ></div>
+                    <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
                 </div>
-                <div v-if="currentList.length === 0" class="text-center text-xs text-gray-700 py-10">
-                    [ NO MODULES ONLINE ]
-                </div>
+                <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
             </div>
         </div>
     </div>
@@ -81,54 +99,60 @@
                     const user = ref(null);
                     const email = ref('');
                     const loading = ref(false);
+                    const msg = ref('');
                     const apps = ref([]);
                     const activeTab = ref('music');
+                    const wheelRotation = ref(0);
 
                     onMounted(async () => {
                         const { data: { session } } = await sb.auth.getSession();
-                        user.value = session?.user || null;
-                        sb.auth.onAuthStateChange((_, s) => user.value = s?.user || null);
+                        if (session) user.value = session.user;
                         
                         // 拉取数据
                         const { data } = await sb.from('apps').select('*');
                         if (data) apps.value = data;
                         
+                        sb.auth.onAuthStateChange((_, s) => user.value = s?.user || null);
                         document.getElementById('app').style.display = 'block';
                     });
 
                     const handleLogin = async () => {
                         loading.value = true;
                         const { error } = await sb.auth.signInWithOtp({ email: email.value });
-                        if (error) alert(error.message); else alert('LINK SENT! CHECK INBOX.');
+                        if (error) alert(error.message); else msg.value = "LINK SENT! CHECK INBOX.";
                         loading.value = false;
                     };
 
                     const signOut = () => sb.auth.signOut();
 
+                    const switchTab = (tab, index) => {
+                        activeTab.value = tab;
+                        wheelRotation.value = -90 - (index * 72);
+                    };
+
                     const currentList = computed(() => apps.value.filter(a => a.category === activeTab.value));
-                    
-                    const colorClass = computed(() => ({
-                        'music':'text-green-500 border-green-900',
-                        'visual':'text-yellow-500 border-yellow-900',
-                        'literature':'text-purple-500 border-purple-900',
-                        'agent':'text-red-500 border-red-900',
-                        'automation':'text-gray-300 border-gray-700'
+                    const activeColor = computed(() => ({
+                        'music':'#10b981','visual':'#f59e0b','literature':'#8b5cf6','agent':'#ef4444','automation':'#d1d5db'
                     }[activeTab.value]));
 
-                    // 🟢 核心：带证跳转
+                    // 🟢 核心修复：强制携带 Session 令牌跳转
                     const openApp = async (app) => {
                         const { data: { session } } = await sb.auth.getSession();
                         if (session) {
                             const url = new URL(app.url);
-                            // 将 Token 拼接到 URL Hash 中
-                            url.hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
+                            // 构造 Hash 参数
+                            const params = new URLSearchParams();
+                            params.set('access_token', session.access_token);
+                            params.set('refresh_token', session.refresh_token);
+                            url.hash = params.toString();
+                            
                             window.open(url.toString(), '_blank');
                         } else {
                             alert("PLEASE LOGIN FIRST");
                         }
                     };
 
-                    return { user, email, loading, handleLogin, signOut, activeTab, currentList, colorClass, openApp };
+                    return { user, email, loading, msg, activeTab, currentList, activeColor, wheelRotation, switchTab, handleLogin, signOut, openApp };
                 }
             }).mount('#app');
         }
