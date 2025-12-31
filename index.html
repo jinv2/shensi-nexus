@@ -11,7 +11,6 @@
         body { background-color: #000; color: #e5e5e5; font-family: monospace; overflow-x: hidden; }
         .nexus-container { width: 100%; max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
         .nexus-border { border: 1px solid #333; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); width: 100%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        .btn-main { background: #d4af37; color: #000; font-weight: bold; padding: 15px; width: 100%; cursor: pointer; border: none; transition: 0.3s; }
         
         /* 魔法轮 */
         .wheel-wrapper { display: flex; justify-content: center; margin: 30px 0; }
@@ -48,6 +47,19 @@
         }
         .status-ready { background: #10b981; color: #000; }
         .status-dev { background: #f59e0b; color: #000; }
+        .btn-open {
+            background: transparent;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 4px 12px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-open:hover {
+            background: #d4af37;
+            color: #000;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-center py-10">
@@ -83,7 +95,7 @@
             
             <!-- AUTOMATION MATRIX 应用 -->
             <div v-if="activeTab === 'automation'" class="space-y-3">
-                <div @click="openAppDirect('ghost-operator')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                <div @click="openApp('ghost-operator')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
                     <div>
                         <div class="flex items-center">
                             <span class="text-xs font-bold text-gray-300 mb-1">Ghost Operator</span>
@@ -95,10 +107,10 @@
                             <span>点击直接打开 - 已移除登录验证</span>
                         </div>
                     </div>
-                    <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
+                    <button class="btn-open" @click.stop="openApp('ghost-operator')">OPEN ></button>
                 </div>
                 
-                <div @click="openAppDirect('monitor-eye')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                <div @click="openApp('monitor-eye')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
                     <div>
                         <div class="flex items-center">
                             <span class="text-xs font-bold text-gray-300 mb-1">Monitor Eye</span>
@@ -110,10 +122,10 @@
                             <span>点击直接打开 - 已移除登录验证</span>
                         </div>
                     </div>
-                    <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
+                    <button class="btn-open" @click.stop="openApp('monitor-eye')">OPEN ></button>
                 </div>
                 
-                <div @click="openAppDirect('vibe-coder')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                <div @click="openApp('vibe-coder')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
                     <div>
                         <div class="flex items-center">
                             <span class="text-xs font-bold text-gray-300 mb-1">Vibe Coder</span>
@@ -125,13 +137,13 @@
                             <span>点击直接打开 - 已移除登录验证</span>
                         </div>
                     </div>
-                    <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
+                    <button class="btn-open" @click.stop="openApp('vibe-coder')">OPEN ></button>
                 </div>
             </div>
             
             <!-- 其他分类的占位应用 -->
             <div v-else>
-                <div v-for="app in currentList" :key="app.slug" @click="openAppDirect('coming-soon')" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
+                <div v-for="app in currentList" :key="app.slug" @click="openApp(app.slug)" class="nexus-border app-item" :style="{ borderLeftColor: activeColor }">
                     <div>
                         <div class="flex items-center">
                             <span class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</span>
@@ -139,7 +151,7 @@
                         </div>
                         <div class="text-[10px] text-gray-600">{{ app.description }}</div>
                     </div>
-                    <div class="text-[10px]" :style="{color: activeColor}">COMING SOON</div>
+                    <button class="btn-open" @click.stop="openApp(app.slug)">COMING SOON</button>
                 </div>
                 <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
             </div>
@@ -157,6 +169,7 @@
 
         createApp({
             setup() {
+                // 使用ref定义响应式数据
                 const apps = ref([
                     // 自动化应用 (已部署)
                     { slug: 'ghost-operator', name: 'Ghost Operator', description: 'Automation workflow & AI analysis matrix', category: 'automation', url: 'https://ghost-operator-7e8tt4m7h-jinvbars-projects.vercel.app/' },
@@ -183,8 +196,8 @@
                     'music':'#10b981','visual':'#f59e0b','literature':'#8b5cf6','agent':'#ef4444','automation':'#d1d5db'
                 }[activeTab.value]));
 
-                // 🟢 修复的openApp函数 - 直接打开应用，不传递token
-                const openAppDirect = (appSlug) => {
+                // 🟢 修复的openApp函数 - 直接打开应用
+                const openApp = (appSlug) => {
                     console.log('Opening app:', appSlug);
                     
                     // 查找应用配置
@@ -192,11 +205,12 @@
                     
                     if (!app) {
                         console.error('App not found:', appSlug);
+                        alert('Application not found!');
                         return;
                     }
                     
                     // 对于"即将推出"的应用
-                    if (appSlug === 'coming-soon') {
+                    if (app.url === '#') {
                         alert('🚧 This application is under development and will be available soon!');
                         return;
                     }
@@ -204,30 +218,31 @@
                     console.log('App URL:', app.url);
                     
                     try {
-                        // 直接打开应用URL，不需要传递任何token参数
-                        // 因为我们已经移除了这些应用的登录验证
+                        // 直接打开应用URL
                         const newWindow = window.open(app.url, '_blank');
                         
                         if (!newWindow) {
-                            // 如果弹窗被阻止，尝试在当前页打开
-                            alert('Popup blocked! Click OK to open in current tab.');
-                            window.location.href = app.url;
+                            // 如果弹窗被阻止，提供提示
+                            const openInCurrent = confirm('Popup blocked! Click OK to open in current tab, Cancel to keep browsing.');
+                            if (openInCurrent) {
+                                window.location.href = app.url;
+                            }
                         }
                         
                     } catch (error) {
                         console.error('Error opening app:', error);
-                        alert('Error: ' + error.message);
+                        alert('Error opening application: ' + error.message);
                     }
                 };
 
-                // 预定义的应用打开函数
-                const openGhostOperator = () => openAppDirect('ghost-operator');
-                const openMonitorEye = () => openAppDirect('monitor-eye');
-                const openVibeCoder = () => openAppDirect('vibe-coder');
-
                 return { 
-                    apps, activeTab, currentList, activeColor, wheelRotation,
-                    switchTab, openAppDirect, openGhostOperator, openMonitorEye, openVibeCoder
+                    apps, 
+                    activeTab, 
+                    wheelRotation,
+                    currentList, 
+                    activeColor,
+                    switchTab, 
+                    openApp
                 };
             }
         }).mount('#app');
