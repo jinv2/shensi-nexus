@@ -3,14 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>神思庭 | Shensi-Nexus</title>
+    <title>神思庭 | 会员中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background-color: #000; color: #e5e5e5; font-family: monospace; overflow-x: hidden; }
         .nexus-container { width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
         .nexus-border { border: 1px solid #333; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); width: 100%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        
+        /* 玻璃墙效果 */
+        .glass-wall { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.95); 
+            backdrop-filter: blur(10px);
+            z-index: 1000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .auth-card {
+            background: rgba(10,10,10,0.9);
+            border: 1px solid #444;
+            padding: 40px 30px;
+            max-width: 400px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.1);
+        }
         
         /* 魔法轮 */
         .wheel-wrapper { display: flex; justify-content: center; margin: 30px 0; }
@@ -28,15 +55,99 @@
         .active-item { color: white; border-color: white; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
         .app-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; margin-bottom: 10px; border-left: 3px solid transparent; transition: 0.2s; cursor: pointer; }
         .app-item:hover { background: #222; }
+        
+        /* 加载动画 */
+        .loader { border: 3px solid #333; border-top: 3px solid #00ff00; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* 状态指示 */
+        .status-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+        .status-online { background-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
+        .status-offline { background-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+        
+        /* 会员标签 */
+        .member-badge { background: linear-gradient(45deg, #00ff00, #009900); color: black; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; display: inline-block; margin-left: 10px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-center py-10">
 
-    <div id="app" class="nexus-container">
+    <!-- 会员玻璃墙 -->
+    <div id="glass-wall" class="glass-wall">
+        <div class="auth-card">
+            <h2 class="text-2xl font-bold text-white mb-2">神思庭 - 会员中心</h2>
+            <p class="text-sm text-gray-400 mb-6">请验证您的身份以访问应用矩阵</p>
+            
+            <!-- 登录表单 -->
+            <div v-if="authMode === 'login'" class="mb-6">
+                <input v-model="loginEmail" type="email" placeholder="请输入邮箱地址" 
+                    class="w-full bg-black border border-gray-700 p-3 mb-4 text-white rounded focus:outline-none focus:border-green-500">
+                <input v-model="loginPassword" type="password" placeholder="请输入密码" 
+                    class="w-full bg-black border border-gray-700 p-3 mb-6 text-white rounded focus:outline-none focus:border-green-500">
+                <button @click="loginUser" class="w-full bg-green-700 hover:bg-green-600 text-white font-bold py-3 rounded mb-4 transition">
+                    登录
+                </button>
+                <button @click="authMode = 'register'" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded mb-2 transition">
+                    注册新账户
+                </button>
+                <button @click="authMode = 'reset'" class="w-full bg-transparent text-gray-500 hover:text-gray-300 text-sm py-2 transition">
+                    忘记密码？
+                </button>
+            </div>
+            
+            <!-- 注册表单 -->
+            <div v-if="authMode === 'register'" class="mb-6">
+                <input v-model="registerEmail" type="email" placeholder="请输入邮箱地址" 
+                    class="w-full bg-black border border-gray-700 p-3 mb-4 text-white rounded focus:outline-none focus:border-green-500">
+                <input v-model="registerPassword" type="password" placeholder="设置密码（至少6位）" 
+                    class="w-full bg-black border border-gray-700 p-3 mb-6 text-white rounded focus:outline-none focus:border-green-500">
+                <button @click="registerUser" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded mb-4 transition">
+                    注册
+                </button>
+                <button @click="authMode = 'login'" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded transition">
+                    返回登录
+                </button>
+            </div>
+            
+            <!-- 重置密码 -->
+            <div v-if="authMode === 'reset'" class="mb-6">
+                <input v-model="resetEmail" type="email" placeholder="请输入注册邮箱" 
+                    class="w-full bg-black border border-gray-700 p-3 mb-6 text-white rounded focus:outline-none focus:border-green-500">
+                <button @click="resetPassword" class="w-full bg-yellow-700 hover:bg-yellow-600 text-white font-bold py-3 rounded mb-4 transition">
+                    发送重置邮件
+                </button>
+                <button @click="authMode = 'login'" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded transition">
+                    返回登录
+                </button>
+            </div>
+            
+            <!-- 加载状态 -->
+            <div v-if="loading" class="loader"></div>
+            
+            <!-- 消息提示 -->
+            <div v-if="message" class="mt-4 p-3 rounded text-sm" :class="messageType === 'success' ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'">
+                {{ message }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 主应用界面 -->
+    <div id="app" class="nexus-container" style="display: none;">
         <!-- 头部 -->
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-white mb-2 tracking-[0.2em]">Shensi-ST</h1>
             <p class="text-[10px] text-gray-500 tracking-[0.5em]">Digital Sovereignty Nexus</p>
+            
+            <!-- 用户信息 -->
+            <div class="mt-4 flex items-center justify-center gap-4">
+                <div class="text-sm text-gray-400">
+                    <span class="status-indicator status-online"></span>
+                    已连接: <span class="text-green-400 font-bold">{{ userEmail }}</span>
+                    <span class="member-badge">会员</span>
+                </div>
+                <button @click="logout" class="text-xs bg-red-900/30 text-red-300 px-3 py-1 rounded hover:bg-red-900/50 transition">
+                    退出登录
+                </button>
+            </div>
         </div>
 
         <!-- 魔法轮 -->
@@ -62,23 +173,47 @@
                     <div class="text-xs font-bold text-gray-300 mb-1">{{ app.name }}</div>
                     <div class="text-[10px] text-gray-600">{{ app.description }}</div>
                 </div>
-                <div class="text-[10px]" :style="{color: activeColor}">OPEN ></div>
+                <div class="text-[10px]" :style="{color: activeColor}">访问 ></div>
             </div>
             
-            <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ EMPTY ]</div>
+            <div v-if="currentList.length===0" class="text-center text-xs text-gray-700 py-10">[ 此分类暂无应用 ]</div>
         </div>
     </div>
 
     <script>
-        const { createApp, ref, computed } = Vue;
-
+        const { createApp, ref, computed, onMounted } = Vue;
+        
+        // Supabase 配置
+        const SUPABASE_URL = 'https://enutekcevqcmhrzwdnlt.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudXRla2NldnFjbWhyendkbmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3ODg1MjAsImV4cCI6MjA4MjM2NDUyMH0.WrZ3sRH-0HVXv5NNPTvm00l5kC4qURAaxq0jinxND3E';
+        
         createApp({
             setup() {
-                // 根据你的GitHub和Vercel项目，构建完整的应用列表
+                // 状态管理
+                const glassWall = ref(null);
+                const mainApp = ref(null);
+                const supabase = ref(null);
+                
+                // 用户状态
+                const userEmail = ref('');
+                const session = ref(null);
+                const loading = ref(false);
+                const message = ref('');
+                const messageType = ref('');
+                
+                // 认证表单
+                const authMode = ref('login');
+                const loginEmail = ref('');
+                const loginPassword = ref('');
+                const registerEmail = ref('');
+                const registerPassword = ref('');
+                const resetEmail = ref('');
+                
+                // 应用数据
                 const apps = ref([
                     // ==================== MUSIC MATRIX (音乐相关) ====================
                     { slug: 'sonic-weaver', name: 'Sonic Weaver', description: 'AI音乐编织与声波生成器', category: 'music', url: 'https://shensi-sonic-weaver.vercel.app/' },
-                    { slug: 'voice-alchemy', name: 'Voice Alchemy', description: 'AI语音合成与音频处理', category: 'music', url: 'https://voice-alchemy-eeiy.vercel.app/' }, // 🔴 修改此行
+                    { slug: 'voice-alchemy', name: 'Voice Alchemy', description: 'AI语音合成与音频处理', category: 'music', url: 'https://voice-alchemy-eeiy.vercel.app/' },
                     { slug: 'music-player', name: 'Music Player', description: '高级音乐播放器与音效处理', category: 'music', url: 'https://music-player-v1-one.vercel.app/' },
                     { slug: 'traditional-music', name: '传统古乐', description: '传统民族音乐创作辅助工具', category: 'music', url: 'https://shensi-traditional-music-pwa.vercel.app/' },
                     { slug: 'folk-pwa', name: '民族音乐PWA', description: '民族音乐辅助创作PWA应用', category: 'music', url: 'https://shensi-folk-pwa.vercel.app/' },
@@ -114,16 +249,249 @@
                     { slug: 'super-individual', name: 'Super Individual', description: '超个体构建者·Web3身份协议', category: 'automation', url: 'https://super-individual.vercel.app/' }
                 ]);
                 
-                // 保持原始默认值
+                // UI状态
                 const activeTab = ref('music');
                 const wheelRotation = ref(0);
 
+                // 初始化Supabase
+                const initSupabase = () => {
+                    supabase.value = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    
+                    // 检查现有会话
+                    supabase.value.auth.getSession().then(({ data, error }) => {
+                        if (error) {
+                            console.error('Session check error:', error);
+                            showMessage('会话检查失败: ' + error.message, 'error');
+                            return;
+                        }
+                        
+                        if (data.session) {
+                            session.value = data.session;
+                            userEmail.value = data.session.user.email;
+                            showMainApp();
+                        } else {
+                            // 没有会话，显示登录界面
+                            glassWall.value.style.display = 'flex';
+                        }
+                    });
+                    
+                    // 监听认证状态变化
+                    supabase.value.auth.onAuthStateChange((event, currentSession) => {
+                        console.log('Auth state changed:', event);
+                        if (event === 'SIGNED_IN') {
+                            session.value = currentSession;
+                            userEmail.value = currentSession.user.email;
+                            showMainApp();
+                            showMessage('登录成功！', 'success');
+                        } else if (event === 'SIGNED_OUT') {
+                            session.value = null;
+                            userEmail.value = '';
+                            showLogin();
+                            showMessage('已退出登录', 'info');
+                        } else if (event === 'USER_UPDATED') {
+                            showMessage('用户信息已更新', 'success');
+                        }
+                    });
+                };
+                
+                // 显示主应用界面
+                const showMainApp = () => {
+                    if (glassWall.value) glassWall.value.style.display = 'none';
+                    if (mainApp.value) mainApp.value.style.display = 'flex';
+                };
+                
+                // 显示登录界面
+                const showLogin = () => {
+                    if (glassWall.value) glassWall.value.style.display = 'flex';
+                    if (mainApp.value) mainApp.value.style.display = 'none';
+                    authMode.value = 'login';
+                    clearForms();
+                };
+                
+                // 清空表单
+                const clearForms = () => {
+                    loginEmail.value = '';
+                    loginPassword.value = '';
+                    registerEmail.value = '';
+                    registerPassword.value = '';
+                    resetEmail.value = '';
+                    message.value = '';
+                };
+                
+                // 显示消息
+                const showMessage = (msg, type = 'info') => {
+                    message.value = msg;
+                    messageType.value = type;
+                    
+                    // 自动隐藏消息
+                    setTimeout(() => {
+                        message.value = '';
+                    }, type === 'success' ? 3000 : 5000);
+                };
+                
+                // 用户登录
+                const loginUser = async () => {
+                    if (!loginEmail.value || !loginPassword.value) {
+                        showMessage('请输入邮箱和密码', 'error');
+                        return;
+                    }
+                    
+                    loading.value = true;
+                    
+                    try {
+                        const { data, error } = await supabase.value.auth.signInWithPassword({
+                            email: loginEmail.value,
+                            password: loginPassword.value
+                        });
+                        
+                        if (error) throw error;
+                        
+                        console.log('Login successful:', data);
+                        showMessage('登录成功！', 'success');
+                        
+                    } catch (error) {
+                        console.error('Login error:', error);
+                        showMessage('登录失败: ' + error.message, 'error');
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                // 用户注册
+                const registerUser = async () => {
+                    if (!registerEmail.value || !registerPassword.value) {
+                        showMessage('请输入邮箱和密码', 'error');
+                        return;
+                    }
+                    
+                    if (registerPassword.value.length < 6) {
+                        showMessage('密码至少需要6位字符', 'error');
+                        return;
+                    }
+                    
+                    loading.value = true;
+                    
+                    try {
+                        const { data, error } = await supabase.value.auth.signUp({
+                            email: registerEmail.value,
+                            password: registerPassword.value,
+                            options: {
+                                emailRedirectTo: window.location.origin
+                            }
+                        });
+                        
+                        if (error) throw error;
+                        
+                        console.log('Registration successful:', data);
+                        showMessage('注册成功！请检查您的邮箱确认邮件。', 'success');
+                        
+                        // 切换回登录界面
+                        setTimeout(() => {
+                            authMode.value = 'login';
+                            loginEmail.value = registerEmail.value;
+                            registerEmail.value = '';
+                            registerPassword.value = '';
+                        }, 3000);
+                        
+                    } catch (error) {
+                        console.error('Registration error:', error);
+                        showMessage('注册失败: ' + error.message, 'error');
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                // 重置密码
+                const resetPassword = async () => {
+                    if (!resetEmail.value) {
+                        showMessage('请输入注册邮箱', 'error');
+                        return;
+                    }
+                    
+                    loading.value = true;
+                    
+                    try {
+                        const { error } = await supabase.value.auth.resetPasswordForEmail(resetEmail.value, {
+                            redirectTo: window.location.origin + '/reset-password'
+                        });
+                        
+                        if (error) throw error;
+                        
+                        showMessage('重置密码邮件已发送到您的邮箱，请查收。', 'success');
+                        
+                        // 切换回登录界面
+                        setTimeout(() => {
+                            authMode.value = 'login';
+                            resetEmail.value = '';
+                        }, 3000);
+                        
+                    } catch (error) {
+                        console.error('Reset password error:', error);
+                        showMessage('重置密码失败: ' + error.message, 'error');
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                // 退出登录
+                const logout = async () => {
+                    loading.value = true;
+                    
+                    try {
+                        const { error } = await supabase.value.auth.signOut();
+                        if (error) throw error;
+                        
+                        showMessage('已退出登录', 'info');
+                        
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        showMessage('退出失败: ' + error.message, 'error');
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                // 切换标签页
                 const switchTab = (tab, index) => {
                     activeTab.value = tab;
                     wheelRotation.value = -90 - (index * 72);
                 };
-
+                
+                // 打开应用
+                const openApp = (app) => {
+                    console.log('Opening app:', app.name);
+                    
+                    if (!session.value) {
+                        showMessage('请先登录', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        // 生成带有用户token的URL
+                        const userToken = session.value.access_token;
+                        const appUrl = new URL(app.url);
+                        
+                        // 添加token到URL（仅示例，实际应用中应使用更安全的方式）
+                        const secureUrl = `${app.url}?token=${encodeURIComponent(userToken)}&email=${encodeURIComponent(userEmail.value)}`;
+                        
+                        const newWindow = window.open(secureUrl, '_blank');
+                        
+                        if (!newWindow) {
+                            // 如果弹窗被阻止，显示提示
+                            if (confirm(`打开 "${app.name}"？\n\n（浏览器阻止了弹窗，请在当前页打开吗？）`)) {
+                                window.location.href = secureUrl;
+                            }
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error opening app:', error);
+                        showMessage('打开应用失败: ' + error.message, 'error');
+                    }
+                };
+                
+                // 计算属性
                 const currentList = computed(() => apps.value.filter(a => a.category === activeTab.value));
+                
                 const activeColor = computed(() => ({
                     'music':'#10b981',
                     'visual':'#f59e0b',
@@ -131,46 +499,43 @@
                     'agent':'#ef4444',
                     'automation':'#d1d5db'
                 }[activeTab.value]));
-
-                // 🟢 直接打开应用（已移除登录验证）
-                const openApp = (app) => {
-                    console.log('Opening:', app.name, 'URL:', app.url);
-                    
-                    if (!app.url) {
-                        console.error('App has no URL:', app.name);
-                        return;
-                    }
-                    
-                    try {
-                        // 直接打开应用，不传递任何token
-                        const newWindow = window.open(app.url, '_blank');
-                        
-                        if (!newWindow) {
-                            // 如果弹窗被阻止，尝试在当前页打开
-                            const shouldOpen = confirm(`Open "${app.name}" in current tab?\n\n(Popup was blocked by browser)`);
-                            if (shouldOpen) {
-                                window.location.href = app.url;
-                            }
-                        }
-                        
-                    } catch (error) {
-                        console.error('Error opening app:', error);
-                        alert(`Error opening ${app.name}:\n${error.message}`);
-                    }
-                };
-
+                
+                // 挂载时初始化
+                onMounted(() => {
+                    glassWall.value = document.getElementById('glass-wall');
+                    mainApp.value = document.getElementById('app');
+                    initSupabase();
+                });
+                
                 return { 
-                    user: ref(null),
-                    email: ref(''),
-                    loading: ref(false),
-                    msg: ref(''),
-                    apps, 
-                    activeTab, 
-                    currentList, 
-                    activeColor, 
-                    wheelRotation, 
-                    switchTab, 
-                    openApp 
+                    // 用户状态
+                    userEmail,
+                    loading,
+                    message,
+                    messageType,
+                    authMode,
+                    
+                    // 表单数据
+                    loginEmail,
+                    loginPassword,
+                    registerEmail,
+                    registerPassword,
+                    resetEmail,
+                    
+                    // 应用数据
+                    apps,
+                    activeTab,
+                    currentList,
+                    activeColor,
+                    wheelRotation,
+                    
+                    // 方法
+                    loginUser,
+                    registerUser,
+                    resetPassword,
+                    logout,
+                    switchTab,
+                    openApp
                 };
             }
         }).mount('#app');
