@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>神思庭 | Shensi-Nexus</title>
     
-    <!-- 核心库 -->
+    <!-- 🟢 核心库升级：更换为全球高可用 CDN (修复加载失败问题) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Vue 3 via Cloudflare CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.min.js"></script>
+    <!-- Supabase via jsDelivr CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Font Awesome via Cloudflare -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
         /* === 神思庭 V6.0 视觉核心 === */
@@ -220,14 +223,15 @@
 
         window.onload = function() {
             try {
-                if (typeof Vue === 'undefined' || typeof supabase === 'undefined') throw new Error("Network Error: Libs not loaded");
+                if (typeof Vue === 'undefined' || typeof supabase === 'undefined') {
+                    throw new Error("检测到核心库加载失败，请检查网络连接或尝试关闭 VPN 代理。");
+                }
 
                 const sbClient = supabase.createClient(SB_URL, SB_KEY);
                 const { createApp, ref, onMounted, computed } = Vue;
 
                 createApp({
                     setup() {
-                        // 状态
                         const user = ref(null);
                         const email = ref('');
                         const loading = ref(false);
@@ -241,14 +245,11 @@
                         const activeTab = ref('music'); 
                         const wheelRotation = ref(0);
 
-                        // 初始化系统数据
                         const initSystem = async () => {
-                            // 1. 获取角色
                             const { data: profile } = await sbClient.from('profiles').select('role').eq('id', user.value.id).single();
                             role.value = profile?.role || 'guest';
                             
                             // 2. 拉取所有APP (无论是否激活，先展示，未激活的会在点击时拦截)
-                            // 修正：这里不再按角色过滤APP列表，而是全量拉取，点击时鉴权
                             const { data: appsData } = await sbClient.from('apps').select('*').eq('status', 'active');
                             apps.value = appsData || [];
 
@@ -262,13 +263,11 @@
                         };
 
                         onMounted(async () => {
-                            // 检查 Session
                             const { data: { session } } = await sbClient.auth.getSession();
                             if (session) {
                                 user.value = session.user;
                                 await initSystem();
                             }
-                            // 监听 Session 变化
                             sbClient.auth.onAuthStateChange((_e, session) => {
                                 user.value = session?.user || null;
                                 if(user.value) initSystem();
@@ -278,13 +277,11 @@
                             document.getElementById('app').style.display = 'block';
                         });
 
-                        // 魔法轮逻辑
                         const switchTab = (tab, index) => {
                             activeTab.value = tab;
                             wheelRotation.value = -90 - (index * 72);
                         };
 
-                        // 计算属性
                         const isVip = computed(() => role.value === 'architect' || role.value === 'member');
                         const roleLabel = computed(() => {
                             if (role.value === 'architect') return 'ARCHITECT';
@@ -311,7 +308,6 @@
 
                         const getBtnText = (t) => t==='agent'?'ACTIVATE':(t==='automation'?'DEPLOY':'OPEN >');
 
-                        // 登录逻辑 (Magic Link)
                         const handleLogin = async () => {
                             if (!email.value) return alert('EMAIL REQUIRED');
                             loading.value = true;
@@ -321,14 +317,12 @@
                             loading.value = false;
                         };
 
-                        // 激活逻辑
                         const redeem = async () => {
                             if (!inviteCode.value) return;
                             const { data: codeData } = await sbClient.from('invite_codes').select('*').eq('code', inviteCode.value).eq('is_used', false).single();
                             if (!codeData) return alert('INVALID CODE');
                             
                             let newRole = codeData.type === 'ALL' ? 'architect' : 'member';
-                            // 简化：直接改角色
                             await sbClient.from('profiles').update({ role: newRole }).eq('id', user.value.id);
                             await sbClient.from('invite_codes').update({ is_used: true }).eq('id', codeData.id);
                             alert('ACCOUNT ACTIVATED'); 
@@ -336,7 +330,6 @@
                             initSystem();
                         };
 
-                        // 🟢 核心：无感通行跳转 (Token Passing)
                         const openApp = async (app) => {
                             if (!isVip.value) {
                                 alert("INVITATION REQUIRED. PLEASE ACTIVATE ACCOUNT.");
@@ -346,7 +339,6 @@
                             const { data: { session } } = await sbClient.auth.getSession();
                             if (session) {
                                 const url = new URL(app.url);
-                                // 构造 Hash 参数传递 Token
                                 url.hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
                                 window.open(url.toString(), '_blank');
                             }
